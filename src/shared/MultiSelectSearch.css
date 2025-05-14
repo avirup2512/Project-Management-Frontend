@@ -1,0 +1,46 @@
+.input{
+    position: absolute;
+    background: #fff;
+    box-shadow: 0px 0px 1px 0;
+    left: 0;
+    right: 0;
+    border-radius: 2px;
+}
+.selector{
+    /* display: grid;
+    min-height: 39px;
+    border: 1px solid #d9d7d7;
+    border-radius: 4px;
+    padding-right: 10px; */
+}
+.arrow{
+    position: absolute;
+    right: 2%;
+    top: 62%;
+    cursor: pointer;
+}
+.arrow i{
+    color:#a5a5a5
+}
+.result .item {
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+    cursor: pointer;
+    margin: 0;
+}
+.result .item.disabled {
+    background:#dfdede
+}
+.users .user
+{
+    display: inline-block;
+    background: #2196F3;
+    min-width: 40px;
+    /* text-transform: uppercase; */
+    margin: 5px;
+    color: #fff;
+    padding-left: 5px;
+}
+.users .user .remove {
+    cursor: pointer;
+}

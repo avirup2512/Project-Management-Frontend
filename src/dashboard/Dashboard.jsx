@@ -5,7 +5,7 @@ import Topmenu from "./topMenu/Topmenu";
 import { useState } from "react";
 import { DashboardMessageContext } from "./DashboardMessageContext";
 import UserProfile from "./userProfile/UserProfile";
-function Dashboard({onTriggerDashboard})
+function Dashboard({messageSenderDashboard})
 {
     const [message, setMessage] = useState("");
     return (

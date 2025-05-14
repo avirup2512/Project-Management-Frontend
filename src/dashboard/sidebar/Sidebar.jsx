@@ -1,12 +1,9 @@
 // Sidebar.js
-import React, { useContext, useState } from "react";
 import "./Sidebar.css"; // Optional custom styles
-import { DashboardMessageContext } from "../DashboardMessageContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { message } = useContext(DashboardMessageContext);
   const navigateUser = function (e)
   {
     e.preventDefault();

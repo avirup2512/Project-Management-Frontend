@@ -6,3 +6,10 @@ body.authentication {
 body{
   font-family: Helvetica;
 }
+.appAlert {
+  position: absolute;
+    top: 5%;
+    left: 35%;
+    right: 35%;
+    z-index: 999;
+}

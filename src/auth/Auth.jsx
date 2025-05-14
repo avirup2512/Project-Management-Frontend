@@ -7,9 +7,8 @@ import { useEffect } from 'react';
 function Auth({messageSenderAuth})
 {
     useEffect(() => {
-        console.log("KJ");
         
-    })
+    },[])
     const messageSender = function (message)
     {
         messageSenderAuth(message);

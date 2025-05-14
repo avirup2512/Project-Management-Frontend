@@ -11,13 +11,14 @@ import Auth from './auth/Auth';
 import AppRoutes from './AppRoute';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import AlertComponent from './shared/Alert';
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
 function App() {
   const [isAlertShow, setAlertShow] = useState(false);
   const [alertObject, setAlertObject] = useState({ message: "", alertType: "primary" });
   const messageSender = function (message)
   {
-    setAlertObject({ message: message.message, alertType: "danger" }); 
+    let alertType = message.status === 200 ? "success" :"danger"
+    setAlertObject({ message: message.message, alertType }); 
     setAlertShow(true);
     let removeAlert = setTimeout(function () {
       setAlertShow(false);
@@ -25,7 +26,7 @@ function App() {
   }
   return (
     <GoogleOAuthProvider clientId="919886091004-mdne53v66e3dl718f835g3cn7aj8mb79.apps.googleusercontent.com">
-      {isAlertShow ? <AlertComponent param={alertObject} /> : null}
+      {isAlertShow ? <span className="appAlert"><AlertComponent param={alertObject} /></span> : null}
       <div className='row'>
         <div className='col-md-12 p-0'>
           <AppRoutes messageSenderAppRoutes={ messageSender } />

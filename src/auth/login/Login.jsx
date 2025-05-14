@@ -26,9 +26,10 @@ function Login({messageSenderLogin})
             {
                 localStorage.setItem('token', e.token);
                 navigate("/dashboard");
+                messageSenderLogin({message:e.data, status:200})
             }else if (e.status && e.status == 404)
             {
-                messageSenderLogin({message:e.data})
+                messageSenderLogin({message:e.data, status:404})
             }
         })
     // You can store the user info or send to backend for auth

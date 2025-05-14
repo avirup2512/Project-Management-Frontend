@@ -1,0 +1,33 @@
+.list{
+    box-shadow: 0 0 1px 0;
+    padding: 10px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+}
+.list .icon i{
+    padding: 5px;
+}
+.list .icon .red{
+    color:#EF5350
+}
+.list .icon .primary {
+    color: #9E9E9E
+}
+.list .icon .green {
+    color: #689F38
+}
+.list .users .user {
+    display: inline-block;
+    background: #2196F3;
+    min-width: 30px;
+    text-transform: uppercase;
+    margin: 2px;
+    color: #fff;
+    padding-left: 0;
+    border-radius: 100%;
+    min-height: 30px;
+    text-align: center;
+}
