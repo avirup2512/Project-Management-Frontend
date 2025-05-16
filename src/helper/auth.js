@@ -6,9 +6,15 @@ async function isAuthenticated()
     if (localStorage.getItem("token") !== null)
     {
         try {
-            const user = await authService.getUserDetails({ token: localStorage.getItem("token") });
-            return (user.status && user.status == 200) ? true : false;
+            const user = await authService.getUserDetails({ token: localStorage.getItem("token") });            
+            if(user.status && user.status == 200)
+            {
+                return user;
+            }
+            return null;
         } catch (error) {
+            console.log(error);
+            
             return false;
         }
     }

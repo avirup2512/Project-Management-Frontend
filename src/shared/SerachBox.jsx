@@ -67,21 +67,17 @@ function SearchBox({ properties }) {
                 <div className='col-md-6'>
                     <p className='m-0'>Selected User</p>
                     <hr className='mt-1'></hr>
-                    { properties.selectedUser.length ==0 ? <p className='text-center'>No user is selected.</p>:""}
+                    { properties.selectedUser.length == 0 ? <p className='text-center'>No user is selected.</p>:""}
                     <div className='users pt-1'>
                             {properties.selectedUser.map((su,index) => su.selected ? (
                                 <div className='selectedItem row p-2 mb-0' key={index} title={su.email}>
                                     <span className='col-md-5 p-0'>
                                         {getUserInfo(su)}
                                     </span>
-                                    {/* <span onClick={onItemRemove.bind(null, e.id)} className='float-end remove'>
-                                        <i className="bi bi-x"></i>
-                                    </span> */}
                                     <span className='col-md-5 p-0'>
                                         <Form.Group>
-                                            {/* <Form.Label>Role</Form.Label> */}
-                                            <Form.Select size="sm" value={su.role_id} onChange={(e)=>{roleChange(e,su.id)}}>
-                                            {properties.roles.map(roles => (
+                                            <Form.Select disabled={su.creator} size="sm" value={su.role_id} onChange={(e)=>{roleChange(e,su.id)}}>
+                                            { properties.roles.map(roles => (
                                                     <option key={roles.id} value={roles.id}>
                                                         {roles.role}
                                                     </option>
@@ -89,9 +85,15 @@ function SearchBox({ properties }) {
                                             </Form.Select>
                                         </Form.Group>
                                     </span>
-                                    <span className='col-md-2 p-0 text-center'>
-                                        <i onClick={onItemRemove.bind(null,su.id)} className="bi bi-x-circle-fill red"></i>
+                                <span className='col-md-2 p-0 text-center text-danger'>
+                                        {
+                                            !su.creator && <i onClick={onItemRemove.bind(null, su.id)} className="bi bi-x-circle-fill red"></i>
+                                        }
+                                        {
+                                            su.creator && <span>Creator</span>
+                                        }
                                     </span>
+                                    
                                 </div>
                             ):"")}
                     </div>

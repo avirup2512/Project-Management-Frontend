@@ -1,11 +1,13 @@
 import Alert from 'react-bootstrap/Alert';
 import "./List.css";
 import { useEffect } from 'react';
-function ListComponent({item, properties, users }) {
+function ListComponent({item, properties, users,loggedInUser }) {
   useEffect(() => {
-    console.log(properties);
-    
-  },[properties])
+  }, [properties])
+  const open = function ()
+  {
+    properties.open(item.id);
+  }
   const edit = function ()
   {
     properties.edit(item);
@@ -16,23 +18,24 @@ function ListComponent({item, properties, users }) {
   }
   return (
       <>
-          <div className="list">
-        {item?.name}
-        <div className='users'>
-                {
-                users.map((item, index) => (
-                    <span className='user'><span className='align-text-top'>{ item.first_name[0] }</span></span>
-                  ))
-                }
-              </div>
-              <div className='icon'>
-                <i className="bi bi-eye-fill green"></i>
-                <i className="bi bi-person-fill-add primary"></i>
-                <i onClick={edit} className="bi bi-pen-fill primary"></i>
-                <i onClick={deleteAction} className="bi bi-x-circle-fill red"></i>
-            </div>
-            
+        <div className="list">  
+          <span className='align-content-center'>{item?.name}</span>
+          <div className='users'>
+                  {
+                  users.map((item, index) => (
+                      <span className='user' key={index}><span className='align-text-top'>{ item.first_name[0] }</span></span>
+                    ))
+                  }
           </div>
+          <div className=''>
+                {loggedInUser.id == item.board_user_id && <i className="bi bi-person-circle primary"></i>}
+          </div>
+        <div className='icon'>
+            <i onClick={open} className="bi bi-eye-fill primary"></i>
+            <i onClick={edit} className="bi bi-pen-fill primary"></i>
+            <i onClick={deleteAction} className="bi bi-x-circle-fill red"></i>
+          </div>
+        </div>
     </>
   );
 }

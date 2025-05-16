@@ -7,13 +7,17 @@ import debounce from "lodash.debounce";
 import MultiSelectSearch from "../../shared/MultiSelectSearch";
 import SearchBox from "../../shared/SerachBox";
 import ConfirmationModal from "../../shared/ConfirmationModal";
+import { useAuth } from "../../AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Board({onTrigger})
 {
+    const navigate = useNavigate();
+    const { loggedInUser } = useAuth();
     let currentId = '';
     const [query, setQuery] = useState('');
     const boardService = new BoardService();
-    const [boards, setBoard] = useState([]);
+    const [boards, setBoard] = useState({});
     const [isEmpty, setEmpty] = useState(true);
     const [showAddModal, setModalShow] = useState(false);
     const [boardName, setName] = useState("");
@@ -48,6 +52,7 @@ function Board({onTrigger})
         users:[],
         edit: function (item) { editBoard(item) },
         delete: function (id) { deleteBoard(id, false) },
+        open: function(id) { openBoard(id) }
     })
     
     useEffect(() => {
@@ -75,27 +80,36 @@ function Board({onTrigger})
     const addBoard = async function ()
     {        
         let user = [];
-        if (multiSearchProperties.selectedUser && multiSearchProperties.selectedUser.length > 0)
-        {
-            multiSearchProperties.selectedUser.forEach((e) => {
-                user.push({id:e.id,role:e.role_id})
-            })
-        }
         if (selectedBoards.name) {
             if (!selectedBoards.id)
             {
-                const board = await boardService.createBoard({ name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: selectedBoards.users});
+                if (multiSearchProperties.selectedUser && multiSearchProperties.selectedUser.length > 0)
+                {
+                    multiSearchProperties.selectedUser.forEach((e) => {                            
+                        if(!e.creator)
+                        user.push({user_id:e.id,role:e.role_id})
+                    })
+                }
+                const board = await boardService.createBoard({ name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: user});
                 if (board.status && board.status == 200)
                 {
                     setModalShow(false);
                     getBoard();
                 }
             } else {
-                console.log(selectedBoards.users);
-                
-                const board = await boardService.editBoard({boardId:selectedBoards.id, name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: selectedBoards.users});
+                if (selectedBoards.users && selectedBoards.users.length > 0)
+                {
+                    selectedBoards.users.forEach((e) => {                            
+                        if(!e.creator)
+                            user.push({user_id:e.id,role:e.role_id})
+                    })
+                }
+                const board = await boardService.editBoard({boardId:selectedBoards.id, name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: user});
                 if (board.status && board.status == 200)
                 {
+                    setModalShow(false);
+                    getBoard();
+                } else {
                     setModalShow(false);
                     getBoard();
                 }
@@ -119,7 +133,6 @@ function Board({onTrigger})
     }
     const editBoard = async function (item)
     {
-        console.log(item);
         item.user.forEach((e) => {
             e.selected = true;
         })
@@ -139,7 +152,6 @@ function Board({onTrigger})
                     e.selected = false;
             })
             setSerachProperties((prevItem) => ({ ...prevItem, result: user.data }));
-            
         }
     }
     const debouncedFetchUsers = useCallback(debounce(fetchUsers, 400), []);
@@ -159,7 +171,6 @@ function Board({onTrigger})
         property.result[i].selected = !property.result[i].selected;        
         if(property.result[i].selected == true)
         {
-            console.log(property.result[i]);
             property.result[i].role_id = property.result[i].role;
             property.selectedUser.push(property.result[i]);
             selectedUserMap.set(property.result[i].id, property.result[i]);
@@ -167,8 +178,10 @@ function Board({onTrigger})
         } else {
             selectedUser = property.selectedUser.filter((e) => (e.id != property.result[i].id));
             selectedUserMap.delete(property.result[i].id);
-        }        
-        setSerachProperties({ ...property});
+        }       
+        console.log(property);
+        
+        setSerachProperties((prevItem) => ({ ...prevItem, property }));
     }
     const onUserRemoved = function (id,property)
     {
@@ -176,15 +189,18 @@ function Board({onTrigger})
             if (e.id == id)
                 e.selected = false;
         })       
-        selectedUser = selectedUser.filter((e) => (e.id != id));
+        property.selectedUser = property.selectedUser.filter((e) => (e.id != id));
         selectedUserMap.delete(id);
-        setSerachProperties({ ...property,selectedUser:selectedUser });
+        setSerachProperties({ ...property });
+        setSelectedBoards((p)=>({...p,users:property.selectedUser}))
     }
     const onRoleUpdate = function (role,property,id)
     {
         property.selectedUser.forEach((e) => {
+            console.log(e);
+            
             if (e.id == id)
-                e.role = role;
+                e.role_id = role;
         })
         setSerachProperties({ ...property});
     }
@@ -199,6 +215,10 @@ function Board({onTrigger})
         {
             deleteBoard(currentId, true)
         }
+    }
+    const openBoard = function (id)
+    {
+        navigate("../list/"+id)
     }
     return (
         <>
@@ -217,7 +237,7 @@ function Board({onTrigger})
                 </> :
                     <>
                     { Object.entries(boards).map(([index, item])=>{
-                        return <ListComponent key={index} item={item} properties={listProperties} users={item.user} />
+                        return <ListComponent key={index} item={item} properties={listProperties} users={item.user} loggedInUser={loggedInUser} />
                     }) }
                 </>
             }

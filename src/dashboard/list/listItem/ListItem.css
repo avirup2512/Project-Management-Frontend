@@ -1,0 +1,23 @@
+.listContainer {
+    background-color: #ccc;
+    gap: 20px;
+}
+.listItem {
+    min-height: 100%;
+    background-color: #ebecf0;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 300px;
+}
+.addListSection{
+    cursor: pointer;
+}
+.crossButton {
+    transform: rotate(45deg);
+    font-size: 30px;
+    vertical-align: top;
+    cursor: pointer;
+}

@@ -13,3 +13,19 @@ body{
     right: 35%;
     z-index: 999;
 }
+.dashboard{
+  background-color: #ccd5fb;
+  user-select: none;
+    /* Prevent text selection */
+    -webkit-user-drag: none;
+    /* Prevent image drag on Safari */
+    cursor: grab;
+}
+/* GLOBAL CSS STARTS*/
+.align-center{
+  align-items: center;
+}
+.align-content-center{
+  align-content: center;
+}
+/* GLOBAL CSS ENDS  */

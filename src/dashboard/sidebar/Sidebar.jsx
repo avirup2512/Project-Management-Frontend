@@ -15,7 +15,7 @@ export default function Sidebar() {
     navigate("/dashboard"); 
   }
     return (
-      <div className="bg-light border-end vh-100" id="sidebar-wrapper" style={{ width: "250px" }}>
+      <div className="bg-light border-end" id="sidebar-wrapper" style={{ width: "250px" }}>
         <div className="sidebar-heading p-3 border-bottom fw-bold">My App</div>
         <div className="list-group list-group-flush">
           <a href="#dashboard" className="list-group-item list-group-item-action">Dashboard</a>
