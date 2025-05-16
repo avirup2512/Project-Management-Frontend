@@ -1,6 +1,6 @@
 .listContainer {
-    background-color: #ccc;
     gap: 20px;
+    align-items: flex-start;
 }
 .listItem {
     min-height: 100%;
@@ -11,6 +11,13 @@
     flex-direction: column;
     overflow-y: auto;
     min-width: 300px;
+    max-width: 300px;
+    overflow-x: hidden;
+}
+.listItem .fetchedList .name {
+    word-wrap: break-word;
+    word-break: break-all;
+    font-size: 14px;
 }
 .addListSection{
     cursor: pointer;
@@ -20,4 +27,14 @@
     font-size: 30px;
     vertical-align: top;
     cursor: pointer;
+}
+.addCard{
+    background: #e3e3e3;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+.addCard:hover{
+    background: #ccc;
 }

@@ -28,4 +28,7 @@ body{
 .align-content-center{
   align-content: center;
 }
+.cursor-pointer{
+  cursor: pointer;
+}
 /* GLOBAL CSS ENDS  */

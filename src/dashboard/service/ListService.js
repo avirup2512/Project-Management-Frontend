@@ -28,6 +28,18 @@ let ListService = (function()
         });
         return res.json();
     }
+    ListService.prototype.updateListPosition = async function (params)
+    {
+        const res = await fetch(baseUrl+'list/updatePosition',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     return ListService;
 })()
 

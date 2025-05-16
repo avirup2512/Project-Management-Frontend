@@ -9,24 +9,37 @@ function ListItem({item,addList,properties})
     const listService = new ListService();
     const enableEditMode = function ()
     {
-        console.log("JI");
         setEditMode(true)
-        // properties.addList()
     }
     const addListFunc = async() => {
         if (listName)
         {
-            const list = await listService.createList({ boardId: properties.boardId, name: listName, position: 1 });
+            const list = await listService.createList({ boardId: properties.boardId, name: listName, position: properties.lastPosition+1 });
             if (list.status && list.status == 200)
             {
                 properties.listAdded();
             }
         }
     }
+    const addCard = function ()
+    {
+        
+    }
     return (
         <>
-            <div className="listItem">
-            <p className="mb-0">{item &&  item.name }</p>
+            <div className={addList ? "cursor-pointer listItem" : "listItem"} data-id={item?.id} data-boardId={item?.boardId}
+            data-name={item?.name}>
+                {
+                    !addList &&
+                    <div className="fetchedList">
+                        <p className="mb-2 ps-1 name">{item &&  item.name }</p>
+                        <div className="addCard" onClick={addCard}>
+                            <i className="bi bi-plus primary d-inline-block"></i>
+                            <span>Add Card </span>
+                        </div>
+                    </div>
+                }
+                
                 {
                     addList && !editMode &&
                     <div className="addListSection" onClick={enableEditMode}>
