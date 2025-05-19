@@ -2,9 +2,9 @@ import AuthService from "../auth/service/AuthService";
 
 async function isAuthenticated()
 {
-    const authService = new AuthService();
+    const authService = new AuthService();    
     if (localStorage.getItem("token") !== null)
-    {
+    {        
         try {
             const user = await authService.getUserDetails({ token: localStorage.getItem("token") });            
             if(user.status && user.status == 200)

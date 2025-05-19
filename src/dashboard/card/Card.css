@@ -1,0 +1,11 @@
+.cardItem{
+    background: #fff;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    margin-bottom: 5px;
+}
+.checkBox input{
+    border:1px solid #7c7979
+}

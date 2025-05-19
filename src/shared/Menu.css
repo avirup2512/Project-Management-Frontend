@@ -1,0 +1,17 @@
+.menuContainer{
+    position: absolute;
+    left: 250px;
+    background: #ccc;
+    border-radius: 5px;
+    min-width: 300px;
+    min-height: 100px;
+    top: 0;
+    z-index: 999999999;
+}
+.menuItem{
+    padding: 10px;
+}
+.menuItem:hover{
+    background-color: #959494;
+    cursor: pointer;
+}

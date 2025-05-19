@@ -5,9 +5,9 @@ let CardService = (function()
     {
         
     }
-    CardService.prototype.getAllCard = async function (boardId)
+    CardService.prototype.getAllCard = async function (listId,boardId)
     {
-        const res = await fetch(baseUrl+'card/getAllList/'+boardId,{
+        const res = await fetch(baseUrl+'card/getAllCard/'+listId+"/"+boardId,{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -16,10 +16,22 @@ let CardService = (function()
         });
         return res.json();
     }
-    CardService.prototype.createList = async function (params)
+    CardService.prototype.createCard = async function (params)
     {
-        const res = await fetch(baseUrl+'list/create',{
+        const res = await fetch(baseUrl+'card/create',{
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.setStatus = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/setStatus',{
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+ localStorage.getItem("token")

@@ -1,16 +1,23 @@
 import Alert from 'react-bootstrap/Alert';
 import "./List.css";
 import { useEffect } from 'react';
-function ListComponent({item, properties, users,loggedInUser }) {
+import { useDispatch, useSelector } from 'react-redux';
+import { setBoard, setBoardList } from '../dashboard/board/BoardSlice';
+function ListComponent({ item, properties, users, loggedInUser }) {
+  const boardSelector = useSelector((state) =>  state.board);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-  }, [properties])
+  }, [boardSelector])
   const open = function ()
   {
     properties.open(item.id);
   }
   const edit = function ()
   {
-    properties.edit(item);
+    let obj = {...item,edit:true};
+    dispatch(setBoard(obj));
+    properties.edit();
   }
   const deleteAction = function ()
   {

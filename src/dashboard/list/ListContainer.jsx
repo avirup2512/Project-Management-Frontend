@@ -7,7 +7,7 @@ import ListService from "../service/ListService";
 import { ReactSortable , Swap} from "react-sortablejs";
 
 function ListContainer({ onTrigger }) {
-
+    let lists = [];
     const listService = new ListService();
     const navigate = useNavigate();
     const {boardId} = useParams();
@@ -16,24 +16,28 @@ function ListContainer({ onTrigger }) {
     const [listProperty, setListProperties] = useState({
         boardId,
         listAdded: function () { getList() },
-        lastPosition:null
+        lastPosition: null,
+        updateCards: (listId, updatedCards) => { updateCard(listId, updatedCards) },
+        completeCard:(listId,cardId,value)=> {completeCard(listId,cardId,value)},
+        listEdited:()=>{editList()},
+        cards:[]
     })
     useEffect(() => {
         getList();
     },[])
     const getList = async () => {
-        console.log(boardId);
         const list = await listService.getAllList(boardId);
         if (list.status && list.status == 200)
         {
-            list.data.sort((a, b) => {
+            const result = Object.entries(list.data).map(([_, value]) => value);
+            result.sort((a, b) => {
                 return a.position > b.position ? 1 : -1
             })
-            setListItem(list.data);
-            if (list.data.length > 0)
+            setListItem(result);
+            if (result.length > 0)
             {
-                setLastPosition(list.data[list.data.length - 1].position);
-                setListProperties((p)=>({...p,lastPosition:list.data[list.data.length - 1].position}))
+                setLastPosition(result[result.length - 1].position);
+                setListProperties((p) => ({ ...p, lastPosition: result[result.length - 1].position }));
             }
             else
             {
@@ -41,20 +45,12 @@ function ListContainer({ onTrigger }) {
             }
         }        
     }
-    const addList = async function ()
+    const editList = function ()
     {
-        setListItem((p) => {
-            let arr = [...p];
-            arr.push(1);
-            return arr;
-        })
+        getList();
         
     }
     const changePosition = async (evt) => {
-        console.log(evt);
-        
-        console.log(listItem);
-        
         let oldListItem = {};
         let newListItem = {};
         listItem.forEach((e) => {
@@ -66,7 +62,6 @@ function ListContainer({ onTrigger }) {
                 oldListItem = e
             }
         })
-        console.log(evt.to.hasChildNodes(), evt.to.childNodes);
         const listMap = new Map();
         if (evt.to.hasChildNodes())
         {
@@ -81,10 +76,36 @@ function ListContainer({ onTrigger }) {
                 listToBeEdited.push(e);
             }
         });
-
         const list = await listService.updateListPosition({ boardId, lists: listToBeEdited });
-
-        console.log(listItem);
+        setListProperties((p) => ({ ...p, positionChanged: !listProperty.positionChanged }));
+    }
+    const updateCard = (listId, updatedCards) => {
+        setListItem(prevLists => {
+            const newLists = [...prevLists];         
+            const index = newLists.findIndex(l => l.id === listId);
+            if (index !== -1) {
+                newLists[index] = { ...newLists[index], cards: updatedCards };
+            }
+                return newLists;
+        });
+        
+    }
+    const completeCard = (listId,cardId,value) => {
+        setListItem(prevLists => {
+            const newLists = [...prevLists];         
+            const index = newLists.findIndex(l => l.id === listId);
+            const updatedCards = newLists[index].cards.map((e) => {                
+                if (e.id == cardId) {
+                    e.complete = value;
+                }
+                return e;
+            });
+                console.log(updatedCards);
+            if (index !== -1) {
+                newLists[index] = { ...newLists[index], cards: updatedCards };
+            }
+                return newLists;
+        });
     }
     return (
         <>
@@ -93,13 +114,14 @@ function ListContainer({ onTrigger }) {
                     <Button variant="primary" onClick={() => addList(false)}>Add List</Button>
                 </div> */}
                 <>
-                    <ReactSortable list={listItem} chosenClass={'chosen'} sort={true} setList={setListItem} animation={200} easing={ "cubic-bezier(1, 0, 0, 1)"} onUpdate={changePosition}
+                    <ReactSortable list={listItem} chosenClass={'chosen'} sort={true} setList={setListItem} animation={200} easing={"cubic-bezier(1, 0, 0, 1)"}
+                        onUpdate={changePosition} 
                         className="listContainer d-flex">
-                    {listItem.map((e,i) => (
-                        <ListItem addList={false} item={e}  key={i} />
-                    ))}
-                    <ListItem properties={listProperty} addList={true} />
-                </ReactSortable>
+                        {listItem.map((e,i) => (
+                            <ListItem addList={false} item={e} properties={listProperty}  key={i} />
+                        ))}
+                            <ListItem properties={listProperty} addList={true} />
+                    </ReactSortable>
                 </>
             </div>
         </>

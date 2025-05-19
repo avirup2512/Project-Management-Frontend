@@ -9,15 +9,18 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: clip;
     min-width: 300px;
     max-width: 300px;
-    overflow-x: hidden;
+    position: relative;
+    max-height: 80vh;
 }
 .listItem .fetchedList .name {
     word-wrap: break-word;
     word-break: break-all;
     font-size: 14px;
+    width: 100%;
+    cursor: pointer;
 }
 .addListSection{
     cursor: pointer;
@@ -37,4 +40,8 @@
 }
 .addCard:hover{
     background: #ccc;
+}
+.scroll{
+    overflow-y: auto;
+    max-height: 50vh;
 }

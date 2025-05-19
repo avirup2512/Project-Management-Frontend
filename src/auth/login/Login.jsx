@@ -5,15 +5,19 @@ import Form from 'react-bootstrap/Form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import AuthService from "../service/AuthService";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../AuthSlice";
 
 function Login({messageSenderLogin})
 {
+    const dispatch = useDispatch();
+
     const authService = new AuthService('');
     const navigate = useNavigate();
     const handleSuccess = (credentialResponse) => {
         console.log(credentialResponse);
         
-            // jwtDecode
+        //jwtDecode
         const decoded = jwtDecode(credentialResponse.credential);
         console.log(decoded);
         const param = {};
@@ -24,12 +28,13 @@ function Login({messageSenderLogin})
         .then(function (e) {
             if (e.status && e.status == 200)
             {
+                dispatch(setUser(e.data));
                 localStorage.setItem('token', e.token);
                 navigate("/dashboard");
-                messageSenderLogin({message:e.data, status:200})
+                messageSenderLogin({ message: e.message, status: 200 });
             }else if (e.status && e.status == 404)
             {
-                messageSenderLogin({message:e.data, status:404})
+                messageSenderLogin({ message: e.message, status: 404 });
             }
         })
     // You can store the user info or send to backend for auth

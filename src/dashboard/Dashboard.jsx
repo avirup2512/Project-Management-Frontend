@@ -13,21 +13,30 @@ function Dashboard({messageSenderDashboard})
     const [scrollLeft , setScrollLeft ] = useState(0);
     const mousedown = function (e)
     {
-        console.log(e);
-        
+        let target = e.target;        
+        if (target.classList.contains("listContainer"))
+        {
+            target = e.target.parentElement.parentElement;
+        }
         setIsDown(true);
-        e.target.classList.add("active");
-        setStartX(e.pageX - e.target.offsetLeft);
-        setScrollLeft(e.target.scrollLeft);
+        target.classList.add("active");
+        
+        setStartX(e.pageX - target.offsetLeft);
+        setScrollLeft(target.scrollLeft);
     }
     const mousemove = function (e)
     {
+        let target = e.target;        
+        if (target.classList.contains("listContainer"))
+        {
+            target = e.target.parentElement.parentElement;
+        }
         if (!isDown)
             return;
         e.preventDefault();
-        const x = e.pageX - e.target.offsetLeft;
+        const x = e.pageX - target.offsetLeft;
         const walk = (x - startX) * 1.5; // scroll speed
-        e.target.scrollLeft = scrollLeft - walk;
+        target.scrollLeft = scrollLeft - walk;
     }
     const [message, setMessage] = useState("");
     return (
@@ -43,7 +52,7 @@ function Dashboard({messageSenderDashboard})
                             <Route path="/" element={<Navigate to="board"/>}></Route>
                             <Route path="board" element={<Board />}></Route>
                             <Route path="user" element={<UserProfile></UserProfile>}></Route>
-                            <Route path="list/:boardId" element={<ListContainer/>}></Route>
+                        <Route path="list/:boardId" element={<ListContainer />}></Route>
                         </Routes>
                     </div>
                 </div>

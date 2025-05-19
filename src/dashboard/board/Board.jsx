@@ -7,17 +7,21 @@ import debounce from "lodash.debounce";
 import MultiSelectSearch from "../../shared/MultiSelectSearch";
 import SearchBox from "../../shared/SerachBox";
 import ConfirmationModal from "../../shared/ConfirmationModal";
-import { useAuth } from "../../AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setBoard, setBoardList } from "./BoardSlice";
+import { setUserList } from "../userProfile/UserSlice";
 
 function Board({onTrigger})
 {
+    const userState = useSelector((state) => state.auth.user);
+    const boardSelector = useSelector((state) => state.board);
+    
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { loggedInUser } = useAuth();
     let currentId = '';
     const [query, setQuery] = useState('');
     const boardService = new BoardService();
-    const [boards, setBoard] = useState({});
     const [isEmpty, setEmpty] = useState(true);
     const [showAddModal, setModalShow] = useState(false);
     const [boardName, setName] = useState("");
@@ -50,7 +54,7 @@ function Board({onTrigger})
     })
     const [listProperties, setListProperties] = useState({
         users:[],
-        edit: function (item) { editBoard(item) },
+        edit: function () { editBoard() },
         delete: function (id) { deleteBoard(id, false) },
         open: function(id) { openBoard(id) }
     })
@@ -58,13 +62,19 @@ function Board({onTrigger})
     useEffect(() => {
         getBoard();
         getRoles();
-    }, [])
+    }, []);
+    useEffect(() => {
+        // if (boardSelector.board && boardSelector.board.edit)
+        // {
+        //     editBoard()
+        // }
+    }, [boardSelector])
     const getBoard = async function ()
     {
         const board = await boardService.getAllBoards(localStorage.getItem("token"));        
         if(board.status && board.status == 200)
         {
-            setBoard(board.data);
+            dispatch(setBoardList(board.data));
             setEmpty(false)
         } 
     }
@@ -80,8 +90,8 @@ function Board({onTrigger})
     const addBoard = async function ()
     {        
         let user = [];
-        if (selectedBoards.name) {
-            if (!selectedBoards.id)
+        if (boardSelector.board.name) {
+            if (!boardSelector.board.id)
             {
                 if (multiSearchProperties.selectedUser && multiSearchProperties.selectedUser.length > 0)
                 {
@@ -90,21 +100,23 @@ function Board({onTrigger})
                         user.push({user_id:e.id,role:e.role_id})
                     })
                 }
-                const board = await boardService.createBoard({ name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: user});
+                const board = await boardService.createBoard({ name: boardSelector.board.name, isPublic: boardSelector.board.isPublic ? 1 : 0, users: user});
                 if (board.status && board.status == 200)
                 {
                     setModalShow(false);
                     getBoard();
                 }
             } else {
-                if (selectedBoards.users && selectedBoards.users.length > 0)
+                console.log(boardSelector.board);
+                
+                if (boardSelector.board.user && boardSelector.board.user.length > 0)
                 {
-                    selectedBoards.users.forEach((e) => {                            
+                    boardSelector.board.user.forEach((e) => {                            
                         if(!e.creator)
                             user.push({user_id:e.id,role:e.role_id})
                     })
                 }
-                const board = await boardService.editBoard({boardId:selectedBoards.id, name: selectedBoards.name, isPublic: selectedBoards.isPublic ? 1 : 0, users: user});
+                const board = await boardService.editBoard({boardId:boardSelector.board.id, name: boardSelector.board.name, isPublic: boardSelector.board.isPublic ? 1 : 0, users: user});
                 if (board.status && board.status == 200)
                 {
                     setModalShow(false);
@@ -131,27 +143,33 @@ function Board({onTrigger})
             
         }
     }
-    const editBoard = async function (item)
+    const editBoard = async function ()
     {
-        item.user.forEach((e) => {
-            e.selected = true;
-        })
+        console.log(boardSelector);
+        
+        // item.user.forEach((e) => {
+        //     e.selected = true;
+        // })
         setModalShow(true);
-        setSelectedBoards((p)=>({...p,name:item.name,id:item.id,users:item.user}))
-        setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
+        
+        // setSelectedBoards((p)=>({...p,}))
+        // setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
     }
     const fetchUsers = async (params) => {
+        console.log(params);
+        
         const user = await boardService.searchUser(params);
         if (user.status && user.status == 200)
         {
             setUser(user.data);
-            user.data.forEach((e) => {
-                if (selectedUserMap.has(e.id))
-                    e.selected = true;
-                else
-                    e.selected = false;
-            })
-            setSerachProperties((prevItem) => ({ ...prevItem, result: user.data }));
+            dispatch(setUserList(user.data));            
+            // user.data.forEach((e) => {
+            //     if (selectedUserMap.has(e.id))
+            //         e.selected = true;
+            //     else
+            //         e.selected = false;
+            // })
+            // setSerachProperties((prevItem) => ({ ...prevItem, result: user.data }));
         }
     }
     const debouncedFetchUsers = useCallback(debounce(fetchUsers, 400), []);
@@ -168,20 +186,20 @@ function Board({onTrigger})
     };
     const onUserSelect = function (i,property)
     {
-        property.result[i].selected = !property.result[i].selected;        
-        if(property.result[i].selected == true)
-        {
-            property.result[i].role_id = property.result[i].role;
-            property.selectedUser.push(property.result[i]);
-            selectedUserMap.set(property.result[i].id, property.result[i]);
-            property.onRoleUpdate(1, property, property.result[i].id);
-        } else {
-            selectedUser = property.selectedUser.filter((e) => (e.id != property.result[i].id));
-            selectedUserMap.delete(property.result[i].id);
-        }       
-        console.log(property);
+        // property.result[i].selected = !property.result[i].selected;        
+        // if(property.result[i].selected == true)
+        // {
+        //     property.result[i].role_id = property.result[i].role;
+        //     property.selectedUser.push(property.result[i]);
+        //     selectedUserMap.set(property.result[i].id, property.result[i]);
+        //     property.onRoleUpdate(1, property, property.result[i].id);
+        // } else {
+        //     selectedUser = property.selectedUser.filter((e) => (e.id != property.result[i].id));
+        //     selectedUserMap.delete(property.result[i].id);
+        // }       
+        // console.log(property);
         
-        setSerachProperties((prevItem) => ({ ...prevItem, property }));
+        // setSerachProperties((prevItem) => ({ ...prevItem, property }));
     }
     const onUserRemoved = function (id,property)
     {
@@ -236,8 +254,8 @@ function Board({onTrigger})
                     <p>No Board</p>
                 </> :
                     <>
-                    { Object.entries(boards).map(([index, item])=>{
-                        return <ListComponent key={index} item={item} properties={listProperties} users={item.user} loggedInUser={loggedInUser} />
+                    { Object.entries(boardSelector.boardList).map(([index, item])=>{
+                        return <ListComponent key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                     }) }
                 </>
             }
@@ -252,7 +270,7 @@ function Board({onTrigger})
                             <Form onSubmit={addBoard}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control type="input" value={selectedBoards.name} onChange={(e)=>setSelectedBoards((p)=>({...p,name:e.target.value}))} required></Form.Control>
+                                    <Form.Control type="input" value={boardSelector.board.name} onChange={(e)=>setSelectedBoards((p)=>({...p,name:e.target.value}))} required></Form.Control>
                                 </Form.Group>
                                 <SearchBox properties={multiSearchProperties}></SearchBox>
                                 <Form.Group className="mb-3" controlId="formBasicCheckbox">
