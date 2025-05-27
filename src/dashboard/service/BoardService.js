@@ -75,6 +75,18 @@ let BoardService = (function()
         });
         return res.json();
     }
+    BoardService.prototype.searchBoardUser = async function (keyword,boardId)
+    {
+        const res = await fetch(baseUrl+'auth/searchByBoardId',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify({keyword,boardId}),
+        });
+        return res.json();
+    }
 
     return BoardService;
 })()

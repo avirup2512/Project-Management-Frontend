@@ -9,3 +9,22 @@
 .checkBox input{
     border:1px solid #7c7979
 }
+.cardMenu{
+    padding: 0px;
+    margin: 0;
+    list-style: none;
+}
+.cardMenu li{
+    position: relative;
+    background: #ccc;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+.tags .tagItem{
+    background-color: #b2f075;
+    border-radius: 20px;
+    padding: 2px 9px;
+    margin: 3px;
+}

@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const BoardSlice = createSlice({
     name: "board",
     initialState: {
-        board: {},
+        board: {user:[]},
         boardList: [],
         selectedUser:[]
     },

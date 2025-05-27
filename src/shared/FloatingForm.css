@@ -1,0 +1,10 @@
+.floating-container{
+    top: 34px;
+    left: 0;
+    right: 0;
+    min-width: 300px;
+    z-index: 999;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 5px;
+}

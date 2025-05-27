@@ -6,6 +6,7 @@ import { useState } from "react";
 import { DashboardMessageContext } from "./DashboardMessageContext";
 import UserProfile from "./userProfile/UserProfile";
 import ListContainer from "./list/ListContainer";
+import CardDetails from "./card/CardDetails";
 function Dashboard({messageSenderDashboard})
 {
     const [isDown, setIsDown] = useState(false);
@@ -52,7 +53,8 @@ function Dashboard({messageSenderDashboard})
                             <Route path="/" element={<Navigate to="board"/>}></Route>
                             <Route path="board" element={<Board />}></Route>
                             <Route path="user" element={<UserProfile></UserProfile>}></Route>
-                        <Route path="list/:boardId" element={<ListContainer />}></Route>
+                            <Route path="list/:boardId" element={<ListContainer />}></Route>
+                            <Route path="list/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
                         </Routes>
                     </div>
                 </div>

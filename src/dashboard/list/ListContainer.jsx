@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 import "./List.css"
 import ListService from "../service/ListService";
 import { ReactSortable , Swap} from "react-sortablejs";
+import { useDispatch, useSelector } from "react-redux";
+import { setAllList } from "./ListSlice";
 
 function ListContainer({ onTrigger }) {
+    const allList = useSelector((e) => e.list.allList);
+    const dispatch = useDispatch();
     let lists = [];
     const listService = new ListService();
     const navigate = useNavigate();
@@ -22,9 +26,13 @@ function ListContainer({ onTrigger }) {
         listEdited:()=>{editList()},
         cards:[]
     })
-    useEffect(() => {
+    useEffect(() => {        
         getList();
-    },[])
+    }, []);
+    useEffect(() => {  
+        console.log(allList);
+        
+    },[allList])
     const getList = async () => {
         const list = await listService.getAllList(boardId);
         if (list.status && list.status == 200)
@@ -32,8 +40,9 @@ function ListContainer({ onTrigger }) {
             const result = Object.entries(list.data).map(([_, value]) => value);
             result.sort((a, b) => {
                 return a.position > b.position ? 1 : -1
-            })
-            setListItem(result);
+            });
+            dispatch(setAllList(result))
+            // setListItem(result);
             if (result.length > 0)
             {
                 setLastPosition(result[result.length - 1].position);
@@ -47,13 +56,13 @@ function ListContainer({ onTrigger }) {
     }
     const editList = function ()
     {
-        getList();
+        // getList();
         
     }
     const changePosition = async (evt) => {
         let oldListItem = {};
         let newListItem = {};
-        listItem.forEach((e) => {
+        allList.forEach((e) => {
             if (e.position == evt.oldIndex)
             {
                 newListItem = e;
@@ -70,14 +79,14 @@ function ListContainer({ onTrigger }) {
             })
         }
         const listToBeEdited = [];
-        listItem.forEach((e) => {
+        allList.forEach((e) => {
             if (e.position != listMap.get("" + e.id + "")) {
-                e.position = listMap.get("" + e.id + "");
-                listToBeEdited.push(e);
+                let obj = { ...e };
+                obj.position = listMap.get("" + e.id + "");
+                listToBeEdited.push(obj);
             }
         });
         const list = await listService.updateListPosition({ boardId, lists: listToBeEdited });
-        setListProperties((p) => ({ ...p, positionChanged: !listProperty.positionChanged }));
     }
     const updateCard = (listId, updatedCards) => {
         setListItem(prevLists => {
@@ -90,22 +99,22 @@ function ListContainer({ onTrigger }) {
         });
         
     }
-    const completeCard = (listId,cardId,value) => {
-        setListItem(prevLists => {
-            const newLists = [...prevLists];         
-            const index = newLists.findIndex(l => l.id === listId);
-            const updatedCards = newLists[index].cards.map((e) => {                
-                if (e.id == cardId) {
-                    e.complete = value;
-                }
-                return e;
-            });
-                console.log(updatedCards);
-            if (index !== -1) {
-                newLists[index] = { ...newLists[index], cards: updatedCards };
+    const completeCard = (listId, cardId, value) => {
+        console.log(allList);
+        
+        let list = [...allList ];
+        let index = list.findIndex(l => l.id === listId);
+        console.log(list);
+        
+        console.log(index);
+        
+        const updatedCards = list[index].cards.map((e) => {                
+            if (e.id == cardId) {
+                e.complete = value;
             }
-                return newLists;
+            return e;
         });
+        // dispatch(setAllList(list));
     }
     return (
         <>
@@ -114,10 +123,13 @@ function ListContainer({ onTrigger }) {
                     <Button variant="primary" onClick={() => addList(false)}>Add List</Button>
                 </div> */}
                 <>
-                    <ReactSortable list={listItem} chosenClass={'chosen'} sort={true} setList={setListItem} animation={200} easing={"cubic-bezier(1, 0, 0, 1)"}
+                    <ReactSortable list={allList.map(item => ({ ...item }))} chosenClass={'chosen'} sort={true} setList={(list) => {
+                        let obj = JSON.parse(JSON.stringify(list));
+                        dispatch(setAllList(obj)); 
+                    }} animation={200} easing={"cubic-bezier(1, 0, 0, 1)"}
                         onUpdate={changePosition} 
                         className="listContainer d-flex">
-                        {listItem.map((e,i) => (
+                        {allList.map((e,i) => (
                             <ListItem addList={false} item={e} properties={listProperty}  key={i} />
                         ))}
                             <ListItem properties={listProperty} addList={true} />

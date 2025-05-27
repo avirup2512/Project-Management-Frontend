@@ -1,5 +1,6 @@
 let AuthService = (function()
 {
+    // let baseUrl = "https://avirup2512.github.io/projectManagement/";
     let baseUrl = "http://localhost:8089/";
     function AuthService()
     {

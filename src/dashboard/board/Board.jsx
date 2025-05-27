@@ -1,22 +1,22 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { DashboardMessageContext } from "../DashboardMessageContext";
 import BoardService from "../service/BoardService";
 import { Button, Form, Modal } from "react-bootstrap";
 import ListComponent from "../../shared/List";
 import debounce from "lodash.debounce";
-import MultiSelectSearch from "../../shared/MultiSelectSearch";
 import SearchBox from "../../shared/SerachBox";
 import ConfirmationModal from "../../shared/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setBoard, setBoardList } from "./BoardSlice";
 import { setUserList } from "../userProfile/UserSlice";
+import { setAllRoles } from "../DashboardSlice";
 
 function Board({onTrigger})
 {
     const userState = useSelector((state) => state.auth.user);
     const boardSelector = useSelector((state) => state.board);
-    
+    const allRoles = useSelector((e) => e.dashboard.allRoles);
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
     let currentId = '';
@@ -82,8 +82,9 @@ function Board({onTrigger})
     {
         const roles = await boardService.getAllRoles();
         if(roles.status && roles.status == 200)
-        {
+        {            
             setRoles(roles.data);
+            dispatch(setAllRoles(roles.data));
             setSerachProperties((prevItem) => ({ ...prevItem, roles: roles.data }));
         } 
     }
@@ -93,9 +94,9 @@ function Board({onTrigger})
         if (boardSelector.board.name) {
             if (!boardSelector.board.id)
             {
-                if (multiSearchProperties.selectedUser && multiSearchProperties.selectedUser.length > 0)
+                if (boardSelector.board.user && boardSelector.board.user.length > 0)
                 {
-                    multiSearchProperties.selectedUser.forEach((e) => {                            
+                    boardSelector.board.user.forEach((e) => {                            
                         if(!e.creator)
                         user.push({user_id:e.id,role:e.role_id})
                     })
@@ -162,14 +163,7 @@ function Board({onTrigger})
         if (user.status && user.status == 200)
         {
             setUser(user.data);
-            dispatch(setUserList(user.data));            
-            // user.data.forEach((e) => {
-            //     if (selectedUserMap.has(e.id))
-            //         e.selected = true;
-            //     else
-            //         e.selected = false;
-            // })
-            // setSerachProperties((prevItem) => ({ ...prevItem, result: user.data }));
+            dispatch(setUserList(user.data));
         }
     }
     const debouncedFetchUsers = useCallback(debounce(fetchUsers, 400), []);
@@ -270,7 +264,7 @@ function Board({onTrigger})
                             <Form onSubmit={addBoard}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control type="input" value={boardSelector.board.name} onChange={(e)=>setSelectedBoards((p)=>({...p,name:e.target.value}))} required></Form.Control>
+                                    <Form.Control type="input" value={boardSelector.board.name} onChange={(e)=>dispatch(setBoard({...boardSelector.board,name:e.target.value}))} required></Form.Control>
                                 </Form.Group>
                                 <SearchBox properties={multiSearchProperties}></SearchBox>
                                 <Form.Group className="mb-3" controlId="formBasicCheckbox">

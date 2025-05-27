@@ -6,16 +6,24 @@ import CardService from "../../service/CardService";
 import { ReactSortable } from "react-sortablejs";
 import Card from "../../card/Card";
 import Menu from "../../../shared/Menu";
+import { useDispatch, useSelector } from "react-redux";
+import { setAllList, setCurrentCard } from "../ListSlice";
+import CardModal from "../../card/CardDetails";
+import { useNavigate } from "react-router-dom";
 function ListItem({item,addList,properties})
 {
+    const navigate = useNavigate();
+    const allList = useSelector((e) => e.list.allList);
+    const dispatch = useDispatch();
     const [editMode, setEditMode] = useState(false);
     const [cardEditMode, setCardEditMode] = useState(false);
     const [cardName, setCardName] = useState([]);
     const [listName, setListName] = useState("");
     const [cards, setCards] = useState([]);
     const [listEdit, seListEdit] = useState(false);
-    const [positionChanged, setPositionChanged] = useState(false);
     const [menuShow, setMenuShow] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+
     const [cardProperty, setCardProperty] = useState({
         completeCard:(id,value)=>{completeCard(id,value)}
     })
@@ -27,22 +35,11 @@ function ListItem({item,addList,properties})
     const cardService = new CardService();
 
     useEffect(() => {
-        if (!addList)
-            getAllCard();
     }, []);
     useEffect(() => {   
         if (!addList)
         setListName(item.name);
     }, [item]);
-    const getAllCard = async function ()
-    {
-        const card = await cardService.getAllCard(item?.id,item?.board_id);
-        if (card.status && card.status == 200)
-        {
-            setCards(card.data);
-            properties.updateCards(item.id, card.data);
-        }
-    }
     const enableEditMode = function ()
     {
         setEditMode(true)
@@ -50,19 +47,17 @@ function ListItem({item,addList,properties})
     const addListFunc = async() => {
         if (listName)
         {
-            console.log(properties);
-            
             const list = await listService.createList({ boardId: properties.boardId, name: listName, position: properties.lastPosition+1 });
             if (list.status && list.status == 200)
             {
-                properties.listAdded();
+                console.log(list);
+                
+                properties.listAdded(list.data?.insertId);
             }
         }
     }
     const addCard = function (e)
     {        
-        // e.preventDefault();
-        // e.stopPropagation();
         setCardEditMode(true)
     }
     const addCardFunc = async function (e)
@@ -70,10 +65,18 @@ function ListItem({item,addList,properties})
         if (cardName)
         {
             const card = await cardService.createCard({ name: cardName, listId: item?.id, boardId: item?.board_id });
-            if (card.status && card.status == 200)
-            {
+            if (card.status && card.status == 200) {
+                const index = allList.findIndex(l => l.id === item.id);
+                const list = [...allList];
+                const listObj = { ...list[index] };
+                console.log(list);
+                
+                const cardArr = [...listObj.cards]
+                cardArr.push({ complete: 0, description: null, id: card.data.insertId, name: cardName });
+                listObj.cards = cardArr;
+                list[index] = listObj;
+                dispatch(setAllList(list));
                 setCardEditMode(false);
-                getAllCard();
             }
         }
     }
@@ -89,6 +92,13 @@ function ListItem({item,addList,properties})
                 properties.listEdited();                
             }
         }
+    }
+    const openCard = (event, card) =>
+    {
+        // console.log(card);
+        dispatch(setCurrentCard(card));
+        // setShowModal(true);
+        navigate("./"+item.id+"/card/"+card.id)
     }
     const completeCard = (cardId,value) => {
         properties.completeCard(item.id,cardId,value);
@@ -121,13 +131,14 @@ function ListItem({item,addList,properties})
                             </div>
                             <hr></hr>
                             <div className="scroll">
-                                <ReactSortable className="mb-2" list={item.cards} sort={true} setList={(newState) => {    
-                                        setCards(newState); 
+                                <ReactSortable className="mb-2" list={item.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {    
+                                        
+                                    setCards(newState); 
                                         properties.updateCards(item.id, newState);
                                     }} >
                                     {
                                         item.cards.map((e,i) => (
-                                            <Card item={e} properties={cardProperty} boardId={item.board_id} listId={item.id} key={e.id}></Card>
+                                            <Card onClick={(event)=>openCard(event,e)} item={e} boardId={item.board_id} listId={item.id} key={e.id}></Card>
                                         ))
                                     }
                                 </ReactSortable>
@@ -166,6 +177,7 @@ function ListItem({item,addList,properties})
                         <i onClick={()=>{setEditMode(false)}} className="bi bi-plus primary d-inline-block crossButton"></i>
                     </Form.Group>
                 }
+                {showModal && <CardModal boardId={item.board_id} listId={item.id} closeCall={()=> setShowModal(false) } />}
             </div>
         </>
     )

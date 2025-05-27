@@ -43,4 +43,22 @@ body{
 .width-100{
   width:100%
 }
+.width-80 {
+  width: 80%
+}
+.width-20 {
+  width: 20%
+}
+.user{
+    display: inline-block;
+    background: #2196F3;
+    min-width: 30px;
+    text-transform: uppercase;
+    margin: 2px;
+    color: #fff;
+    padding-left: 0;
+    border-radius: 100%;
+    min-height: 30px;
+    text-align: center;
+}
 /* GLOBAL CSS ENDS  */

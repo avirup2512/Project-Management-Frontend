@@ -5,6 +5,8 @@ import { setBoard } from '../dashboard/board/BoardSlice';
 function SearchBox({ properties }) {
     const boardSelector = useSelector((state) => state.board);
     const allUserList = useSelector((state) => state.user.allUserList);
+    const allRoles = useSelector((e) => e.dashboard.allRoles);
+
     const dispatch = useDispatch();
     const [allUser, setAllUser] = useState([]);
     const [selectedUser, setSelectedUser] = useState([]);
@@ -17,12 +19,18 @@ function SearchBox({ properties }) {
         return map;
     })
     useEffect(() => {
+        console.log(boardSelector.board);
+        
         setSelectedUser(boardSelector.board.user);
     }, [boardSelector])
     useEffect(() => {
         setAllUser(allUserList)
         console.log(allUserList);
-    },[allUserList])
+    }, [allUserList])
+    useEffect(() => {
+        console.log(allRoles);
+    }, [allRoles])
+    
     const [isOpen, toggleShow] = useState(false);
     const search = function (e)
     {        
@@ -30,6 +38,8 @@ function SearchBox({ properties }) {
     }
     const onItemSelect = function (item)
     {
+        console.log(allRoles);
+        
         if (selectedUserMap.has(item.id))
         {
             onItemRemove(item.id)
@@ -38,7 +48,7 @@ function SearchBox({ properties }) {
             let obj = JSON.stringify(boardSelector.board);
             let obj2 = JSON.parse(obj);
             obj2.user.push(JSON.parse(JSON.stringify(item)));
-            obj2.user[obj2.user.length-1].role_id = properties.roles[0].id
+            obj2.user[obj2.user.length-1].role_id = allRoles[0].id
             dispatch(setBoard(obj2));
         }
     }
@@ -84,7 +94,7 @@ function SearchBox({ properties }) {
                             <span className='arrow'>{!isOpen && <i className="bi bi-caret-down-fill"></i>}{isOpen && <i className="bi bi-caret-up-fill"></i> }</span>
                         </Form.Group>
                     </div>
-            { isOpen &&
+                { isOpen &&
                 <div className='input'>
                     
                     <div className='result'>
