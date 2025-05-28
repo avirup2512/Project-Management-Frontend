@@ -1,6 +1,7 @@
 let CardService = (function()
 {
-    let baseUrl = "http://localhost:8089/";
+    let baseUrl = "https://avirup2512.github.io/projectManagement/";
+    // let baseUrl = "http://localhost:8089/";
     function CardService()
     {
         
