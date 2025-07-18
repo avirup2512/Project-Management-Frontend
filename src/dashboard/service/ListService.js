@@ -1,7 +1,7 @@
-let ListService = (function()
+import config from "../../config";
+let ListService = (function ()
 {
-    let baseUrl = "https://avirup2512.github.io/projectManagement/";
-    // let baseUrl = "http://localhost:8089/";
+    let baseUrl = config.baseUrl;
     function ListService()
     {
         

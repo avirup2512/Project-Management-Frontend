@@ -1,7 +1,7 @@
-let CardService = (function()
+import config from "../../config";
+let CardService = (function ()
 {
-    let baseUrl = "https://avirup2512.github.io/projectManagement/";
-    // let baseUrl = "http://localhost:8089/";
+    let baseUrl = config.baseUrl;
     function CardService()
     {
         
@@ -68,6 +68,18 @@ let CardService = (function()
     {
         const res = await fetch(baseUrl+'card/addUsers',{
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.deleteTag = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/deleteTag',{
+        method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+ localStorage.getItem("token")

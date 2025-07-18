@@ -1,6 +1,6 @@
 import { Button, Container, Form, Modal, Row } from "react-bootstrap";
 import "./Card.css"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CardService from "../service/CardService";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList, setCurrentCard } from "../list/ListSlice";
@@ -10,6 +10,7 @@ import BoardService from "../service/BoardService";
 import { useParams } from "react-router-dom";
 import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles } from "../DashboardSlice";
+import ConfirmationModal from "../../shared/ConfirmationModal";
 
 function CardDetails({closeCall})
 {
@@ -44,7 +45,14 @@ function CardDetails({closeCall})
     const [showAddUser, setShowAddUser] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [inputLabel, setInputLabel] = useState("");
+    const [confirmationModalProp, setConfirmationProp] = useState({
+        showModal: false,
+        message: "",
+        action: function (t) { onConfirm(t) },
+        close:function(){closeModal()}
+    })
     const boardService = new BoardService();
+    const currentTagIdRef = useRef(null);
 
     const getRoles = async () => {
         const roles = await boardService.getAllRoles();
@@ -192,6 +200,24 @@ function CardDetails({closeCall})
         }
         
     }
+    const onConfirm = async () => {      
+        const card = await cardService.deleteTag({ cardId, boardId, tagId:currentTagIdRef.current  });
+        if (card.status && card.status == 200)
+        {
+            let card = JSON.parse(JSON.stringify(currentCard));
+            card.tags = card.tags.filter((e) => e.tagId != currentTagIdRef.current);            
+            dispatch(setCurrentCard(card));
+        }
+    }
+    const closeModal = () => {
+        setConfirmationProp((prevItem)=>({...prevItem,showModal:false}))
+    }
+    const deleteTag = (id) => {
+        console.log(currentCard);
+        
+        currentTagIdRef.current = id;
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, message: "Are you sure want to delete tag?" }))
+    }
     return (
         <>
             <Container>
@@ -229,12 +255,19 @@ function CardDetails({closeCall})
                                 ))    
                             }
                             </div>
-                            <div className="tag">
+                            <div className="tags mb-3">
                                 <div className="d-flex align-center justify-content-space-between">
                                     <p className="mb-0">Tags</p>
                                     <Button onClick={() => { setInputLabel("Tags"); setShowModal(true)}} size="sm">Add Tag</Button>
                                 </div>
-                            <hr className="mt-2"></hr>
+                                <hr className="mt-2"></hr>
+                                {
+                                currentCard?.tags?.map((e,i) => (
+                                    <span key={i} className="tagItem">{e.tagName}
+                                        <i onClick={()=>{deleteTag(e.tagId)}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>
+                                    </span>
+                                ))    
+                                }
                             </div>
                             <div className="description">
                                 <p className="mb-0">Description</p>
@@ -264,6 +297,7 @@ function CardDetails({closeCall})
             {
                 showModal && <FloatingForm saveAction={saveAction} roleChange={roleChange} allRoles={roles} onItemSelect={userAdd} onItemRemove={userRemove} inputLabel={inputLabel} close={() => { setShowModal(false)}} onSearch={searchMember} searchedList={searchedUser} selectedList={currentCard?.users} showModal={showModal}/>
             }
+            <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
         </>
     )
 }

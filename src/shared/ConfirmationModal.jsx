@@ -1,6 +1,6 @@
 import { Button, Modal } from "react-bootstrap";
 
-function ConfirmationModal({ properties }) {
+function ConfirmationModal({ properties,onConfirm }) {
     const closeModal = function ()
     {
         properties.close();
@@ -9,7 +9,7 @@ function ConfirmationModal({ properties }) {
     }
     const action = function (value)
     {
-        properties.action(value);
+        onConfirm();
         closeModal();
     }
   return (
