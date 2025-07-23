@@ -4,12 +4,14 @@ import BoardReducer from "../dashboard/board/BoardSlice";
 import UserSlice from "../dashboard/userProfile/UserSlice";
 import ListSlice from '../dashboard/list/ListSlice';
 import DashboardSlice from '../dashboard/DashboardSlice';
+import CardSlice from '../dashboard/card/CardSlice';
 export default configureStore({
     reducer: {
         auth: AuthReducer,
         board: BoardReducer,
         user: UserSlice,
         list: ListSlice,
-        dashboard: DashboardSlice
+        card:CardSlice,
+        dashboard: DashboardSlice,
     }
 })

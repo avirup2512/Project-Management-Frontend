@@ -76,10 +76,45 @@ let CardService = (function ()
         });
         return res.json();
     }
+    CardService.prototype.addTag = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/addTag',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     CardService.prototype.deleteTag = async function (params)
     {
         const res = await fetch(baseUrl+'card/deleteTag',{
         method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.getTagBySearchKey = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/getTag/'+params.key+'/'+params.boardId+'',{
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        });
+        return res.json();
+    }
+    CardService.prototype.addCheckListItem = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/addCheckList',{
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+ localStorage.getItem("token")

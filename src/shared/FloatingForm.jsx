@@ -1,32 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import "./FloatingForm.css";
-function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onSearch,onItemSelect,onItemRemove,showModal,inputLabel,close, allRoles }) {
+function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onSearch,onItemSelect,onItemRemove,showModal,inputLabel,close, allRoles, addTag }) {
     
+    const [searchKey, setSearchKey] = useState("");
     useEffect(() => {
-        console.log(selectedList);
     })
     const [isOpen, toggleShow] = useState(false);
     // const [selectedItem, setSelectedItem] = useState([]);
     let selectedItemMap = useMemo(() => {
         const map = new Map();
-        console.log(selectedList);
-        
         for (let key in selectedList) {
             map.set(selectedList[key].id, selectedList[key]);
         };
         return map;
-    });
-    console.log(selectedItemMap
-
-    );
-    
-    useEffect((e) => {
-        
     })
-const search = function (e)
-{        
-    onSearch(name,e.target.value);
+    useEffect((e) => {
+
+    })
+    const search = function (e)
+    {        
+        setSearchKey(e.target.value);
+        onSearch(name,e.target.value);
     }
     const itemSelect = function (item)
     {
@@ -37,8 +32,10 @@ const search = function (e)
     }
     const itemRemove = function (item)
     {
-        selectedItemMap.has(item.id);
-        onItemRemove(item.id);
+        //selectedItemMap.has(item.id);
+        console.log(item);
+        
+        onItemRemove(item.id || item.tagId);
     }
     const closeModal = function ()
     {
@@ -52,7 +49,7 @@ const search = function (e)
         {
             showModal &&
             <div className="modal show d-block" tabIndex="-1">
-                <Modal show={showModal} size="lg">
+                <Modal show={showModal} size={inputLabel == 'Tags' ? 'md' : 'lg'}>
                     <Modal.Header closeButton onClick={() => closeModal()}>
                         <Modal.Title>Add { inputLabel}</Modal.Title>
                     </Modal.Header>
@@ -83,14 +80,19 @@ const search = function (e)
                                 })
                             }
                             {
-                                searchedList.length == 0 && 
+                                searchedList.length == 0 && inputLabel != "Tags" &&
                                 <p className='m-0 p-3 text-center'>Type user name or email</p>
-                                    }
+                                || searchedList.length == 0 && searchKey.length == 0 && inputLabel == "Tags" &&
+                                <p className='m-0 p-3 text-center'>Type tag name</p>                  
+                                || searchedList.length == 0 && searchKey.length != 0 && inputLabel == "Tags" &&
+                                <Button size="sm" variant="primary" onClick={() => addTag(searchKey)}>Close</Button>               
+                            }
                             </div>
                             </div>
                                 }
                                 <div className="">
-                                    {
+                                {
+                                        inputLabel != "Tags" &&
                                         selectedList.map((sl,i) => {
                                             return <><div key={i} className="d-flex align-center justify-content-space-between">
                                                 <p className="mb-1">{sl.name}</p>
@@ -116,7 +118,21 @@ const search = function (e)
                                             </>
                                         })
                                     }
-                            </div>
+                                  </div>
+                                  <div className="">
+                                      {
+                                          inputLabel == 'Tags' &&
+                                          selectedList.map((sl, i) => {
+                                              console.log(sl);
+                                              
+                                              return <>
+                                                  <span key={i} className="tagItem">{sl.tagName}
+                                                    <i onClick={()=>{itemRemove(sl)}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>
+                                                </span>
+                                              </>
+                                        })
+                                      }
+                                  </div>
                         </div>
                     </Modal.Body>
 

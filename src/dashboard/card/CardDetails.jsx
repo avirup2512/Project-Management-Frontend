@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CardService from "../service/CardService";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList, setCurrentCard } from "../list/ListSlice";
+import { setAllTag,setCurrentCard as setCurrCard } from "./CardSlice";
 import FloatingForm from "../../shared/FloatingForm";
 import debounce from "lodash.debounce";
 import BoardService from "../service/BoardService";
@@ -11,19 +12,21 @@ import { useParams } from "react-router-dom";
 import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles } from "../DashboardSlice";
 import ConfirmationModal from "../../shared/ConfirmationModal";
+import CheckList from "./CheckList";
 
 function CardDetails({closeCall})
 {
     const { listId } = useParams();
     const { boardId } = useParams();
     const { cardId } = useParams();
-    const currentCard = useSelector((s) => s.list.currentCard);
+    const currentCard = useSelector((s) => s.card.card);
+    const allTag = useSelector((s) => s.card.allTag);
     const allList = useSelector((e) => e.list.allList);
     const user = useSelector((e) => e.user.allUserList);
     const roles = useSelector((e) => e.dashboard.allRoles);
     useEffect(() => {
         console.log(currentCard);
-        if (Object.keys(currentCard).length == 0)
+        if (!currentCard || Object.keys(currentCard).length == 0)
         {
             getCurrentCard();
         }
@@ -36,12 +39,16 @@ function CardDetails({closeCall})
         {
             getRoles()
         }
-    },[roles])
+    }, [roles])
+    useEffect(() => {
+        setSerachedTag(allTag);
+    },[allTag])
     const dispatch = useDispatch();
     const cardService = new CardService();
     const [cardNameEdit, setCardNamEdit] = useState(false);
     const [canDescriptionEdit, setCanDescriptionEdit] = useState(false);
     const [searchedUser, setSerachedUser] = useState([]);
+    const [searchedTag, setSerachedTag] = useState([]);
     const [showAddUser, setShowAddUser] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [inputLabel, setInputLabel] = useState("");
@@ -49,8 +56,9 @@ function CardDetails({closeCall})
         showModal: false,
         message: "",
         action: function (t) { onConfirm(t) },
-        close:function(){closeModal()}
-    })
+        close: function () { closeModal() }
+    });
+    const [checkList, setCheckList] = useState([]);
     const boardService = new BoardService();
     const currentTagIdRef = useRef(null);
 
@@ -62,15 +70,18 @@ function CardDetails({closeCall})
     }
     const getCurrentCard = async () => {
         const card = await cardService.getCardById(boardId, cardId);
+        console.log(card);
+        
         if (card.status && card.status == 200)
         {
-            dispatch(setCurrentCard(card.data[Object.keys(card.data)[0]]));
+            // dispatch(setCurrentCard(card.data[Object.keys(card.data)[0]]));
+            dispatch(setCurrCard(card.data[Object.keys(card.data)[0]]));
         }
     }
     const cardNameChange = (evt) => {
         let curCard = { ...currentCard };
         curCard.name = evt.target.value;
-        dispatch(setCurrentCard(curCard));
+        dispatch(setCurrCard(curCard));
         let list = JSON.parse(JSON.stringify(allList));        
         list.forEach((e) => {
             if (e.id == listId)
@@ -88,7 +99,7 @@ function CardDetails({closeCall})
     const cardDescriptionChange = (evt) => {
         let curCard = { ...currentCard };
         curCard.description = evt.target.value;
-        dispatch(setCurrentCard(curCard));
+        dispatch(setCurrCard(curCard));
         let list = JSON.parse(JSON.stringify(allList));        
         list.forEach((e) => {
             if (e.id == listId)
@@ -129,7 +140,7 @@ function CardDetails({closeCall})
             console.log(curCard);
             
             curCard.complete = !evt.target.checked;
-            dispatch(setCurrentCard(curCard));
+            dispatch(setCurrCard(curCard));
             let list = JSON.parse(JSON.stringify(allList));
             list.forEach((e) => {
                 if (e.id == listId) {
@@ -153,10 +164,34 @@ function CardDetails({closeCall})
             dispatch(setUserList([]));
         }
     }
+    const fetchTags = async (key) => {   
+        let params = {key,boardId}
+        console.log(params);
+        params.boardId = boardId;
+        const tags = await cardService.getTagBySearchKey(params);
+        if (tags.status && tags.status == 200)
+        {
+            setSerachedTag(tags.data);
+            dispatch(setAllTag(tags.data));
+        } else {
+            dispatch(setAllTag([]));
+        }
+    }
     const debouncedFetchUsers = useCallback(debounce(fetchUsers, 400), []);
+    const debouncedFetchedTags = useCallback(debounce(fetchTags, 400), []);
     const searchMember = (name, value) => {
         if (value.length >= 2) {
             debouncedFetchUsers(value);
+        } else if (value.length == 0)
+        {
+            dispatch(setUserList([]));
+        }
+    }
+    const searchTags = (_,value) => {
+        console.log(value);
+        
+        if (value.length >= 2) {
+            debouncedFetchedTags(value);
         } else if (value.length == 0)
         {
             dispatch(setUserList([]));
@@ -170,14 +205,14 @@ function CardDetails({closeCall})
         currentCardCopy.users = users;
         // currentCard = ;
         console.log(currentCardCopy.users);
-        dispatch(setCurrentCard(currentCardCopy));
+        dispatch(setCurrCard(currentCardCopy));
     }
     const userRemove = (id) => {
         // const index = currentCard.users.filter((e) => e.id != id);
         const obj = JSON.parse(JSON.stringify(currentCard));
         obj.users = obj.users.filter((e)=> (e.id != id))
         console.log(obj.users);
-        dispatch(setCurrentCard(obj));
+        dispatch(setCurrCard(obj));
     }
     const roleChange = function (id, role)
     {
@@ -188,7 +223,7 @@ function CardDetails({closeCall})
                 e.role = role
             }
         })
-        dispatch(setCurrentCard(obj))
+        dispatch(setCurrCard(obj))
     }
     const saveAction = async () => {
         const users = currentCard.users;
@@ -206,17 +241,40 @@ function CardDetails({closeCall})
         {
             let card = JSON.parse(JSON.stringify(currentCard));
             card.tags = card.tags.filter((e) => e.tagId != currentTagIdRef.current);            
-            dispatch(setCurrentCard(card));
+            dispatch(setCurrCard(card));
         }
     }
     const closeModal = () => {
         setConfirmationProp((prevItem)=>({...prevItem,showModal:false}))
     }
     const deleteTag = (id) => {
-        console.log(currentCard);
+        console.log(id);
         
         currentTagIdRef.current = id;
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, message: "Are you sure want to delete tag?" }))
+    }
+    const addTag = async (tag) => {
+        console.log(tag);
+        let params = { tag, boardId, cardId };
+        const addedTag = await cardService.addTag(params);
+        if (addedTag .status && addedTag .status == 200)
+        {
+            let currTag = JSON.parse(JSON.stringify(currentCard));
+            currTag.tags.push({ tagId: addedTag.data.insertId, tagName: tag });
+            dispatch(setCurrCard(currTag));
+            setShowModal(false);
+        }
+        console.log(addedTag);
+    }
+    const addCheckList = async () => {
+        const params = { cardId, boardId, name:"New CheckList",isChecked:0, position:0 }
+        const addedCheckList = await cardService.addCheckListItem(params);
+        if (addedCheckList.status && addedCheckList.status == 200) {
+            let currCard = JSON.parse(JSON.stringify(currentCard));
+            if (currCard.hasOwnProperty("checkList") && currCard.checkList)
+                currCard.checkList.push({ cliId: addedCheckList.data.insertId, cliIsChecked: 0, cliName: "New CheckList", cliPosition: 0 });
+            dispatch(setCurrCard(currCard))
+        }
     }
     return (
         <>
@@ -226,7 +284,7 @@ function CardDetails({closeCall})
                         <div className="d-flex align-center justify-content-space-between">
                         <Form>
                             <Form.Check isValid={true} type="checkbox"
-                                checked={currentCard.complete == true} onChange={completeCard} className="checkBox"></Form.Check>
+                                checked={currentCard?.complete == true} onChange={completeCard} className="checkBox"></Form.Check>
                         </Form>
                         {
                         !cardNameEdit &&
@@ -242,7 +300,7 @@ function CardDetails({closeCall})
                         </div>
                     </div>
                     <div className="col-md-12">
-                    <div className="width-100 pe-2">
+                        <div className="width-100 pe-2">
                             <div className="members mb-3">
                                 <div className="d-flex align-center justify-content-space-between">
                                     <p className="mb-0">Member</p>
@@ -264,16 +322,20 @@ function CardDetails({closeCall})
                                 {
                                 currentCard?.tags?.map((e,i) => (
                                     <span key={i} className="tagItem">{e.tagName}
-                                        <i onClick={()=>{deleteTag(e.tagId)}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>
+                                        <i onClick={()=>{ deleteTag(e.tagId)}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>
                                     </span>
                                 ))    
-                                }
+                            }
+                                {
+                                    (currentCard?.tags && currentCard?.tags.length == 0) && 
+                                    <p className="text-center">No Tags.</p>
+                            }
                             </div>
                             <div className="description">
                                 <p className="mb-0">Description</p>
                                 <hr></hr>
                                 {
-                                    !currentCard.description && <p onClick={() => { setCanDescriptionEdit(true) }}>No Description..</p>
+                                    !currentCard?.description && <p onClick={() => { setCanDescriptionEdit(true) }}>No Description..</p>
                                 }
                                     {
                                 !canDescriptionEdit &&
@@ -292,10 +354,27 @@ function CardDetails({closeCall})
                             
                         </div>
                     </div>
+                    <div className="col-md-12">
+                        <div className="width-100 pe-2">
+                            <div className="members mb-3">
+                                <div className="d-flex align-center justify-content-space-between">
+                                    <p className="mb-0">CheckList</p>
+                                    <Button onClick={() => { addCheckList()}} size="sm">Add checkList</Button>
+                                </div>
+                            <hr className="mt-2"></hr>
+                                {
+                                    currentCard.hasOwnProperty("checkList") && currentCard.checkList.length > 0
+                                    && currentCard.checkList.map((e) => {
+                                        return<> <CheckList i={e}></CheckList> </>
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </Row>
             </Container>
             {
-                showModal && <FloatingForm saveAction={saveAction} roleChange={roleChange} allRoles={roles} onItemSelect={userAdd} onItemRemove={userRemove} inputLabel={inputLabel} close={() => { setShowModal(false)}} onSearch={searchMember} searchedList={searchedUser} selectedList={currentCard?.users} showModal={showModal}/>
+                showModal && <FloatingForm saveAction={saveAction} roleChange={roleChange} allRoles={roles} onItemSelect={userAdd} onItemRemove={deleteTag} inputLabel={inputLabel} close={() => { setShowModal(false) }} onSearch={inputLabel == "Tags" ? searchTags: searchMember} searchedList={inputLabel == "Tags" ? searchedTag : searchedUser} selectedList={inputLabel == "Tags" ? currentCard?.tags : currentCard?.users} showModal={showModal} addTag={addTag} />
             }
             <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
         </>

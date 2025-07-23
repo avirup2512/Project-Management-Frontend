@@ -29,3 +29,10 @@
     margin: 4px;
     font-size: 14px;
 }
+.checkListItem{
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #797979;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
