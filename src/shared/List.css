@@ -4,11 +4,14 @@
     margin-bottom: 10px;
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
     background: #ffffff;
+    justify-content: space-between;
 }
 .list .icon{
     display: flex;
+    /* margin-left :auto; */
 }
 .list .icon i{
     padding: 5px;
@@ -22,6 +25,12 @@
 }
 .list .icon .green {
     color: #689F38
+}
+.list .users {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 150px;
 }
 .list .users .user {
     display: inline-block;

@@ -1,4 +1,4 @@
-import { Button, Container, Form, Modal, Row } from "react-bootstrap";
+import { Button, Container, Form, Modal, ProgressBar, Row } from "react-bootstrap";
 import "./Card.css"
 import { useCallback, useEffect, useRef, useState } from "react";
 import CardService from "../service/CardService";
@@ -13,6 +13,9 @@ import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles } from "../DashboardSlice";
 import ConfirmationModal from "../../shared/ConfirmationModal";
 import CheckList from "./CheckList";
+import Comment from "./Comment";
+import TextEditorComponent from "../../shared/TextEditor";
+import { stateToHTML } from "draft-js-export-html";
 
 function CardDetails({closeCall})
 {
@@ -29,6 +32,15 @@ function CardDetails({closeCall})
         if (!currentCard || Object.keys(currentCard).length == 0)
         {
             getCurrentCard();
+        } else {            
+            if (currentCard?.checkList.length > 0)
+            {
+                setProgress(0);
+                currentCard?.checkList.forEach((e) => {
+                    if(e.cliIsChecked)
+                    setProgress((p) => p+(1/currentCard?.checkList.length)*100);
+                })
+            }
         }
     },[currentCard])
     useEffect(() => {
@@ -52,15 +64,18 @@ function CardDetails({closeCall})
     const [showAddUser, setShowAddUser] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [inputLabel, setInputLabel] = useState("");
+    const [progress, setProgress] = useState(0);
     const [confirmationModalProp, setConfirmationProp] = useState({
         showModal: false,
         message: "",
+        type:"",
         action: function (t) { onConfirm(t) },
         close: function () { closeModal() }
     });
     const [checkList, setCheckList] = useState([]);
     const boardService = new BoardService();
     const currentTagIdRef = useRef(null);
+    const currentCheckListId = useRef(null);
 
     const getRoles = async () => {
         const roles = await boardService.getAllRoles();
@@ -235,23 +250,33 @@ function CardDetails({closeCall})
         }
         
     }
-    const onConfirm = async () => {      
-        const card = await cardService.deleteTag({ cardId, boardId, tagId:currentTagIdRef.current  });
-        if (card.status && card.status == 200)
+    const onConfirm = async (type) => {      
+        if (type == "tag")
         {
-            let card = JSON.parse(JSON.stringify(currentCard));
-            card.tags = card.tags.filter((e) => e.tagId != currentTagIdRef.current);            
-            dispatch(setCurrCard(card));
+            const card = await cardService.deleteTag({ cardId, boardId, tagId:currentTagIdRef.current  });
+            if (card.status && card.status == 200)
+            {
+                let card = JSON.parse(JSON.stringify(currentCard));
+                card.tags = card.tags.filter((e) => e.tagId != currentTagIdRef.current);            
+                dispatch(setCurrCard(card));
+            }
+        } else if (type == "checkList")
+        {
+            const params = {cardId,boardId,id:currentCheckListId.current}
+            const deletedCheckList = await cardService.deleteCheckListItem(params);
+            const curCard = JSON.parse(JSON.stringify(currentCard));
+            curCard.checkList = curCard.checkList.filter((e) => {
+                return e.cliId !== currentCheckListId.current;
+            })
+            dispatch(setCurrCard(curCard));
         }
     }
     const closeModal = () => {
         setConfirmationProp((prevItem)=>({...prevItem,showModal:false}))
     }
-    const deleteTag = (id) => {
-        console.log(id);
-        
+    const deleteTag = (id) => {        
         currentTagIdRef.current = id;
-        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, message: "Are you sure want to delete tag?" }))
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"tag", message: "Are you sure want to delete tag?" }))
     }
     const addTag = async (tag) => {
         console.log(tag);
@@ -276,9 +301,19 @@ function CardDetails({closeCall})
             dispatch(setCurrCard(currCard))
         }
     }
+    const deleteCheckList = async (id) => {
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type: "checkList", message: "Are you sure want to delete list?" }));
+        currentCheckListId.current = id;
+        
+    }
+    const addComment = async (e) => {
+        const comment = stateToHTML(e.getCurrentContent());
+        const params = { cardId, boardId,listId, comment };
+        const commentAddede = await cardService.addComment(params);
+    }
     return (
         <>
-            <Container>
+            <Container className="cardDetails">
                 <Row>
                     <div className="col-md-12">
                         <div className="d-flex align-center justify-content-space-between">
@@ -354,6 +389,7 @@ function CardDetails({closeCall})
                             
                         </div>
                     </div>
+                    {/* CHECK LIST */}
                     <div className="col-md-12">
                         <div className="width-100 pe-2">
                             <div className="members mb-3">
@@ -361,20 +397,48 @@ function CardDetails({closeCall})
                                     <p className="mb-0">CheckList</p>
                                     <Button onClick={() => { addCheckList()}} size="sm">Add checkList</Button>
                                 </div>
-                            <hr className="mt-2"></hr>
+                                <hr className="mt-2"></hr>
                                 {
-                                    currentCard.hasOwnProperty("checkList") && currentCard.checkList.length > 0
+                                    currentCard && currentCard?.checkList && currentCard?.checkList.length > 0
+                                    &&
+                                    <div className="mb-4 mt-4">
+                                            <ProgressBar now={progress} />
+                                    </div>
+                                }
+                                {
+                                    currentCard && currentCard.hasOwnProperty("checkList") && currentCard.checkList.length > 0
                                     && currentCard.checkList.map((e) => {
-                                        return<> <CheckList i={e}></CheckList> </>
+                                        return<> <CheckList i={e} deleteChckList={deleteCheckList}></CheckList> </>
                                     })
                                 }
+                            </div>
+                        </div>
+                    </div>
+                    {/* COMMENT */}
+                    <div className="col-md-12">
+                        <div className="width-100 pe-2">
+                            <div className="members mb-3">
+                                <div className="d-flex align-center justify-content-space-between">
+                                    <p className="mb-0">Comments</p>
+                                    <Button onClick={() => { addCheckList()}} size="sm">Add checkList</Button>
+                                </div>
+                                <hr className="mt-2"></hr>
+                                {
+                                    currentCard && currentCard.hasOwnProperty("comments") && currentCard.comments.length > 0
+                                    && currentCard.comments.map((e) => {
+                                        return<> <Comment i={e} deleteChckList={deleteCheckList}></Comment> </>
+                                    })
+                                }
+                                <div>
+                                    <TextEditorComponent onSubmit={addComment}></TextEditorComponent>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </Row>
             </Container>
             {
-                showModal && <FloatingForm saveAction={saveAction} roleChange={roleChange} allRoles={roles} onItemSelect={userAdd} onItemRemove={deleteTag} inputLabel={inputLabel} close={() => { setShowModal(false) }} onSearch={inputLabel == "Tags" ? searchTags: searchMember} searchedList={inputLabel == "Tags" ? searchedTag : searchedUser} selectedList={inputLabel == "Tags" ? currentCard?.tags : currentCard?.users} showModal={showModal} addTag={addTag} />
+                showModal && <FloatingForm saveAction={saveAction} roleChange={roleChange} allRoles={roles} onItemSelect={userAdd} onItemRemove={inputLabel == "Tags" ? deleteTag: userRemove} inputLabel={inputLabel} close={() => { setShowModal(false) }} onSearch={inputLabel == "Tags" ? searchTags: searchMember} searchedList={inputLabel == "Tags" ? searchedTag : searchedUser} selectedList={inputLabel == "Tags" ? currentCard?.tags : currentCard?.users} showModal={showModal} addTag={addTag} />
             }
             <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
         </>

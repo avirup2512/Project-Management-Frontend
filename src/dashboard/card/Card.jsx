@@ -4,13 +4,28 @@ import { useEffect, useState } from "react";
 import CardService from "../service/CardService";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList } from "../list/ListSlice";
+import Menu from "../../shared/Menu";
+import { useParams } from "react-router-dom";
+import ConfirmationModal from "../../shared/ConfirmationModal";
 // import ListService from "../../service/ListService";
-function Card({item,boardId,listId,onClick})
+function Card({item,listId,onClick})
 {
+    const { boardId } = useParams();
     const allList = useSelector((e) => e.list.allList);
     const dispatch = useDispatch();
     const cardService = new CardService();
-
+    const [menuShow, setMenuShow] = useState(false);
+    const [menuProperties, setMenuProperties] = useState({
+        items: [{ name: "Delete Card", action: () => { deleteCard() } }],
+        closeMenu: () => { setMenuShow(false) }
+    });
+    const [confirmationModalProp, setConfirmationProp] = useState({
+        showModal: false,
+        message: "",
+        type:"",
+        action: function (t) { onConfirm(t) },
+        close: function () { closeModal() }
+    });
     const completeCard = async (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -26,6 +41,26 @@ function Card({item,boardId,listId,onClick})
             dispatch(setAllList(list))
         }
     }
+    const deleteCard = async () => {
+        setMenuShow(false);
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"tag", message: "Are you sure want to delete Card?" }))
+    }
+    const onConfirm = async () => {
+        const params = { boardId, listId, cardId: item?.id };
+        const deletedCard = await cardService.deleteCard(params);
+        if (deletedCard.status && deletedCard.status == 200)
+        {
+            let list = JSON.parse(JSON.stringify(allList))
+            let index = list.findIndex(l => l.id === listId);
+            list[index].cards = list[index].cards.filter((e) => { return e.id != item?.id });
+            console.log(list[index].cards);
+            dispatch(setAllList(list))
+            setMenuShow(false);
+        }
+    }
+    const closeModal = () => {
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }));
+    }
     return (
         <>
             <div className="cardItem" onClick={onClick}>
@@ -36,18 +71,24 @@ function Card({item,boardId,listId,onClick})
                                 e.stopPropagation();}} onChange={completeCard} className="checkBox"></Form.Check>
                     </Form>
                     <p className="mb-0 ms-2">{item.name}</p>
+                    <i onClick={(e) => { e.stopPropagation(); setMenuShow(true)}} className="bi bi-three-dots cursor-pointer menuIcon"></i>
+                    <Menu properties={menuProperties} show={menuShow}></Menu>
                 </div>
-                <div className="tags mt-2">
+                {
+                    item && item.hasOwnProperty("tags") &&
+                    <div className="tags mt-2">
                         {
-                            item?.tags.map((e) => {
+                        item?.tags.map((e) => {
                                 return <>
                                     {
                                         e.tagName  && <span className="tagItem"><span className="align-text-bottom">{e.tagName}</span> </span>}
                                 </>
                             })
                         }
-                    </div>
+                </div>
+                }
             </div>
+            <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
         </>
     )
 }

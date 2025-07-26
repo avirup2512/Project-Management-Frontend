@@ -53,6 +53,18 @@ let CardService = (function ()
         });
         return res.json();
     }
+    CardService.prototype.deleteCard = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/delete',{
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     CardService.prototype.getCardById = async function (boardId,cardId)
     {
         const res = await fetch(baseUrl+'card/getCardById/'+boardId+'/'+cardId+'',{
@@ -115,6 +127,54 @@ let CardService = (function ()
     {
         const res = await fetch(baseUrl+'card/addCheckList',{
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.editCheckListItem = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/editCheckList',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.deleteCheckListItem = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/deleteCheckList',{
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.addComment = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/createComment',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.editComment = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/editComment',{
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+ localStorage.getItem("token")

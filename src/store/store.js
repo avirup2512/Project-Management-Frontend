@@ -5,6 +5,7 @@ import UserSlice from "../dashboard/userProfile/UserSlice";
 import ListSlice from '../dashboard/list/ListSlice';
 import DashboardSlice from '../dashboard/DashboardSlice';
 import CardSlice from '../dashboard/card/CardSlice';
+import ProjectSlice from '../dashboard/project/ProjectSlice';
 export default configureStore({
     reducer: {
         auth: AuthReducer,
@@ -13,5 +14,6 @@ export default configureStore({
         list: ListSlice,
         card:CardSlice,
         dashboard: DashboardSlice,
+        project:ProjectSlice
     }
 })

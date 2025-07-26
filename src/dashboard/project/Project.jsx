@@ -1,28 +1,28 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import BoardService from "../service/BoardService";
 import { Button, Form, Modal } from "react-bootstrap";
 import ListComponent from "../../shared/List";
 import debounce from "lodash.debounce";
 import SearchBox from "../../shared/SerachBox";
 import ConfirmationModal from "../../shared/ConfirmationModal";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setBoard, setBoardList } from "./BoardSlice";
+import { setProject, setProjectList } from "./ProjectSlice";
 import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles } from "../DashboardSlice";
+import ProjectService from "../service/ProjectService";
+import BoardService from "../service/BoardService";
 
-function Board({onTrigger})
+function Project()
 {
-    const projectParams = useParams("projectId");
     const userState = useSelector((state) => state.auth.user);
-    const boardSelector = useSelector((state) => state.board);
+    const projectSelector = useSelector((state) => state.project);
     const allRoles = useSelector((e) => e.dashboard.allRoles);
-    const projectList = useSelector((e)=> e.project.projectList)
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
     let currentId = '';
     const [query, setQuery] = useState('');
+    const projectService = new ProjectService();
     const boardService = new BoardService();
     const [isEmpty, setEmpty] = useState(true);
     const [showAddModal, setModalShow] = useState(false);
@@ -62,25 +62,15 @@ function Board({onTrigger})
     })
     
     useEffect(() => {
-        getBoard();
+        getAllProject();
         getRoles();
-        console.log(projectList);
-        
     }, []);
-    useEffect(() => {
-        // if (boardSelector.board && boardSelector.board.edit)
-        // {
-        //     editBoard()
-        // }
-    }, [boardSelector])
-    const getBoard = async function ()
+    const getAllProject = async function ()
     {
-        console.log(projectParams);
-        
-        const board = await boardService.getAllBoards(localStorage.getItem("token"),projectParams.projectId);        
-        if(board.status && board.status == 200)
+        const project = await projectService.getAllProject(localStorage.getItem("token"));        
+        if(project.status && project.status == 200)
         {
-            dispatch(setBoardList(board.data));
+            dispatch(setProjectList(project.data));
             setEmpty(false)
         } 
     }
@@ -94,43 +84,43 @@ function Board({onTrigger})
             setSerachProperties((prevItem) => ({ ...prevItem, roles: roles.data }));
         } 
     }
-    const addBoard = async function ()
+    const addProject = async function ()
     {        
         let user = [];
-        if (boardSelector.board.name) {
-            if (!boardSelector.board.id)
+        if (projectSelector.project.name) {
+            if (!projectSelector.project.id)
             {
-                if (boardSelector.board.user && boardSelector.board.user.length > 0)
+                if (projectSelector.project.user && projectSelector.project.user.length > 0)
                 {
-                    boardSelector.board.user.forEach((e) => {                            
+                    projectSelector.project.user.forEach((e) => {                            
                         if(!e.creator)
                         user.push({user_id:e.id,role:e.role_id})
                     })
                 }
-                const board = await boardService.createBoard({ projectId:projectParams.projectId,name: boardSelector.board.name, isPublic: boardSelector.board.isPublic ? 1 : 0, users: user});
-                if (board.status && board.status == 200)
+                const project = await projectService.createProject({ name: projectSelector.project.name, isPublic: projectSelector.project.isPublic ? 1 : 0, users: user});
+                if (project.status && project.status == 200)
                 {
                     setModalShow(false);
                     getBoard();
                 }
             } else {
-                console.log(boardSelector.board);
+                console.log(projectSelector.project);
                 
-                if (boardSelector.board.user && boardSelector.board.user.length > 0)
+                if (projectSelector.project.user && projectSelector.project.user.length > 0)
                 {
-                    boardSelector.board.user.forEach((e) => {                            
+                    projectSelector.project.user.forEach((e) => {                            
                         if(!e.creator)
                             user.push({user_id:e.id,role:e.role_id})
                     })
                 }
-                const board = await boardService.editBoard({boardId:boardSelector.board.id, name: boardSelector.board.name, isPublic: boardSelector.board.isPublic ? 1 : 0, users: user});
-                if (board.status && board.status == 200)
+                const project = await projectService.editProject({projectId:projectSelector.board.id, name: projectSelector.project.name, isPublic: projectSelector.project.isPublic ? 1 : 0, users: user});
+                if (project.status && project.status == 200)
                 {
                     setModalShow(false);
-                    getBoard();
+                    getAllProject();
                 } else {
                     setModalShow(false);
-                    getBoard();
+                    getAllProject();
                 }
             }
         }
@@ -152,13 +142,7 @@ function Board({onTrigger})
     }
     const editBoard = async function ()
     {
-        console.log(boardSelector);
-        
-        // item.user.forEach((e) => {
-        //     e.selected = true;
-        // })
         setModalShow(true);
-        
         // setSelectedBoards((p)=>({...p,}))
         // setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
     }
@@ -242,20 +226,20 @@ function Board({onTrigger})
         <>
             <div className="header">
                 <h3 className="float-start">
-                Boards
+                Project
                 </h3>
-                <button className="btn btn-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Board</button>
+                <button className="btn btn-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Project</button>
             </div>
             <div className="clearfix"></div>
             <hr></hr>
             {
                 isEmpty ?
                 <>
-                    <p>No Board</p>
+                    <p>No Project</p>
                 </> :
                     <>
-                    { Object.entries(boardSelector.boardList).map(([index, item])=>{
-                        return <ListComponent key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                    { Object.entries(projectSelector.projectList).map(([index, item])=>{
+                        return <ListComponent  key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                     }) }
                 </>
             }
@@ -267,10 +251,10 @@ function Board({onTrigger})
                         </Modal.Header>
 
                         <Modal.Body>
-                            <Form onSubmit={addBoard}>
+                            <Form onSubmit={addProject}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control type="input" value={boardSelector.board.name} onChange={(e)=>dispatch(setBoard({...boardSelector.board,name:e.target.value}))} required></Form.Control>
+                                    <Form.Control type="input" value={projectSelector.project.name} onChange={(e)=>dispatch(setProject({...projectSelector.project,name:e.target.value}))} required></Form.Control>
                                 </Form.Group>
                                 <SearchBox properties={multiSearchProperties}></SearchBox>
                                 <Form.Group className="mb-3" controlId="formBasicCheckbox">
@@ -281,7 +265,7 @@ function Board({onTrigger})
 
                         <Modal.Footer>
                         <Button variant="danger" onClick={() => setModalShow(false)}>Close</Button>
-                        <Button variant="primary" onClick={() => addBoard()}>Submit</Button>
+                        <Button variant="primary" onClick={() => addProject()}>Submit</Button>
                         </Modal.Footer>
                     </Modal>
                 </div>
@@ -291,4 +275,4 @@ function Board({onTrigger})
     )
 }
 
-export default Board;
+export default Project;

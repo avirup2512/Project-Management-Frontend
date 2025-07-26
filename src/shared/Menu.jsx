@@ -2,13 +2,15 @@ import "./Menu.css";
 import { useEffect } from 'react';
 function Menu({properties,show }) {
   useEffect(() => {
-  }, [properties])
+    console.log(show);
+    
+  }, [show])
   return (
       <>
           
           {
               show && 
-              <div className='menuContainer'>
+              <div className='menuContainer' onClick={(event) => {event.stopPropagation()}}>
                       <div className="d-flex align-center justify-content-space-between">
                           <p></p>
                         <p className="text-center mb-1">List Actions</p>
@@ -17,7 +19,7 @@ function Menu({properties,show }) {
               {
                   properties.items.map((e, i) => {
                       return <>
-                          <div className='menuItem' key={i} onClick={e.action}>{ e.name }</div>
+                          <div className='menuItem' key={i} onClick={(event) => {event.stopPropagation(), e.action()}}>{ e.name }</div>
                       </>
                   })
               }

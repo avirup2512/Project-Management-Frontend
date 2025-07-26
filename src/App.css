@@ -5,7 +5,8 @@ body.authentication {
   overflow-x: hidden;
   /* height: 100vh; */
 }
-body{
+body.dashboard{
+  background-color: #fff;
   font-family: Helvetica;
 }
 .appAlert {
@@ -16,7 +17,7 @@ body{
     z-index: 999;
 }
 .dashboard{
-  background-color: #ccd5fb;
+  background-color: #d0d2db;
   user-select: none;
     /* Prevent text selection */
     -webkit-user-drag: none;

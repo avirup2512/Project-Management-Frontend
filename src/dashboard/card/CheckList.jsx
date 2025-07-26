@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import CardService from "../service/CardService";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList } from "../list/ListSlice";
-function CheckList({i})
+import { useParams } from "react-router-dom";
+import { setCheckList } from "./CardSlice";
+function CheckList({i,deleteChckList})
 {
+    const { listId } = useParams();
+    const { boardId } = useParams();
+    const { cardId } = useParams();
     useEffect(() => {
         console.log(i);
         if (i)
@@ -14,30 +19,38 @@ function CheckList({i})
         }
     },[i])
     const allList = useSelector((e) => e.list.allList);
+    const currentCard = useSelector((e) => e.card.card);
     const dispatch = useDispatch();
     const cardService = new CardService();
     const [canNameEdit, setCanNameEdit] = useState(false);
     const [item, setItem] = useState(false);
     const completeCheckList = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const card = await cardService.setStatus({ boardId, listId, cardId: item.id, isComplete: e.target.checked });
-        if (card.status && card.status == 200)
-        {
-            let list = JSON.parse(JSON.stringify(allList))
-            let index = list.findIndex(l => l.id === listId);
-            const cardIndex = list[index].cards.findIndex(elem => elem.id == item.id);
-            let cardObject = JSON.parse(JSON.stringify(list[index].cards[cardIndex]));
-            cardObject.complete = !e.target.checked;
-            list[index].cards[cardIndex] = cardObject;
-            dispatch(setAllList(list))
-        }
-    }
-    const nameChange = (evt) => {
+        // e.preventDefault();
+        // e.stopPropagation();
+        console.log(e.target.checked);
         
+        const item2 = JSON.parse(JSON.stringify(item));
+        item2.cliIsChecked = e.target.checked ? 1 : 0;
+        setItem(item2);
+        dispatch(setCheckList(item2))
+        const params = { name: item2.cliName, isChecked: item2.cliIsChecked, position: item2.cliPosition, id: item2.cliId , cardId,boardId};        
+        const editedCheckList = await cardService.editCheckListItem(params);
+    }
+    const nameChange = async (evt) => {
+        const curCard = JSON.parse(JSON.stringify(currentCard));
         const item2 = JSON.parse(JSON.stringify(item));
         item2.cliName = evt.target.value;
         setItem(item2);
+    }
+    const nameChangeCall = async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        const params = { name: item.cliName, isChecked: item.cliIsChecked, position: item.cliPosition, id: item.cliId , cardId,boardId};        
+        const editedCheckList = await cardService.editCheckListItem(params);
+        setCanNameEdit(false);
+    }
+    const deleteCheckList =  () => {
+        deleteChckList(item.cliId);
     }
     return (
         <>
@@ -45,8 +58,8 @@ function CheckList({i})
                 <div className="d-flex align-center justify-content-flex-start">
                     <Form>
                         <Form.Check isValid={true} type="checkbox"
-                            checked={item.cliIsChecked == 1} onClick={(e)=>{e.preventDefault();
-                                e.stopPropagation();}} onChange={completeCheckList} className="checkBox"></Form.Check>
+                            checked={item.cliIsChecked == 1} onChange={completeCheckList} className="checkBox">
+                            </Form.Check>
                     </Form>
                     {/* <p className="mb-0 ms-2">{item.cliName}</p> */}
                     {
@@ -59,12 +72,13 @@ function CheckList({i})
                         </p>
                     ||
                     canNameEdit && 
-                    <Form>
+                    <Form className="width-100 ms-2" onSubmit={nameChangeCall}>
                         {/* <Form.Label>Name</Form.Label> */}
                         <Form.Control as="input" value={item?.cliName} type="input" onChange={nameChange}
-                            onBlurCapture={nameChange}></Form.Control>
+                            onBlurCapture={nameChangeCall}></Form.Control>
                     </Form>
                     }
+                    <i onClick={()=>{ deleteCheckList()}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>
                 </div>
             </div>
         </>

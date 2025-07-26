@@ -5,7 +5,7 @@ function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onS
     
     const [searchKey, setSearchKey] = useState("");
     useEffect(() => {
-    })
+    },[selectedList])
     const [isOpen, toggleShow] = useState(false);
     // const [selectedItem, setSelectedItem] = useState([]);
     let selectedItemMap = useMemo(() => {
@@ -32,7 +32,7 @@ function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onS
     }
     const itemRemove = function (item)
     {
-        //selectedItemMap.has(item.id);
+        // selectedItemMap.has(item.id);
         console.log(item);
         
         onItemRemove(item.id || item.tagId);
@@ -92,7 +92,7 @@ function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onS
                                 }
                                 <div className="">
                                 {
-                                        inputLabel != "Tags" &&
+                                        inputLabel != "Tags" && selectedList &&
                                         selectedList.map((sl,i) => {
                                             return <><div key={i} className="d-flex align-center justify-content-space-between">
                                                 <p className="mb-1">{sl.name}</p>
@@ -121,10 +121,8 @@ function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onS
                                   </div>
                                   <div className="">
                                       {
-                                          inputLabel == 'Tags' &&
+                                          inputLabel == 'Tags' && selectedList &&
                                           selectedList.map((sl, i) => {
-                                              console.log(sl);
-                                              
                                               return <>
                                                   <span key={i} className="tagItem">{sl.tagName}
                                                     <i onClick={()=>{itemRemove(sl)}}  className="ms-4 cursor-pointer bi bi-x-circle"></i>

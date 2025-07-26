@@ -36,3 +36,9 @@
     border-radius: 5px;
     margin-bottom: 5px;
 }
+.cardDetails {
+    font-size: 14px;
+}
+.menuIcon {
+    margin-left: auto;
+}

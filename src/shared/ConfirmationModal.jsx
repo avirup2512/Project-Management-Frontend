@@ -9,7 +9,7 @@ function ConfirmationModal({ properties,onConfirm }) {
     }
     const action = function (value)
     {
-        onConfirm();
+        onConfirm(properties.type);
         closeModal();
     }
   return (

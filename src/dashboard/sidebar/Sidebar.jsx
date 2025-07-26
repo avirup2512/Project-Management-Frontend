@@ -1,9 +1,11 @@
 // Sidebar.js
+import { useSelector } from "react-redux";
 import "./Sidebar.css"; // Optional custom styles
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const defaultProject = useSelector((p) => p.auth.defaultProject)
   const navigateUser = function (e)
   {
     e.preventDefault();
@@ -11,8 +13,15 @@ export default function Sidebar() {
   }
   const navigateBoard = function (e)
   {
+    console.log(defaultProject);
+    
     e.preventDefault();
-    navigate("/dashboard"); 
+    navigate("/dashboard/board/"+defaultProject?.id);
+  }
+  const navigateProject = function (e)
+  {
+    e.preventDefault();
+    navigate("/dashboard/project"); 
   }
     return (
       <div className="bg-light border-end" id="sidebar-wrapper" style={{ width: "250px" }}>
@@ -20,6 +29,7 @@ export default function Sidebar() {
         <div className="list-group list-group-flush">
           <a href="#dashboard" className="list-group-item list-group-item-action">Dashboard</a>
           <a href="#profile" className="list-group-item list-group-item-action" onClick={navigateUser}>Profile</a>
+          <a href="#profile" className="list-group-item list-group-item-action" onClick={navigateProject}>Project</a>
           <a href="#profile" className="list-group-item list-group-item-action" onClick={navigateBoard}>Boards</a>
           <a href="#settings" className="list-group-item list-group-item-action">Settings</a>
           <a href="#logout" className="list-group-item list-group-item-action text-danger">Logout</a>

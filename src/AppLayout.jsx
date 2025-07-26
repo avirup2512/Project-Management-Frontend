@@ -11,7 +11,9 @@ function AppLayout({ children }) {
         if (location.pathname.startsWith("/auth"))
         {
             document.body.classList.add("authentication")
-        } else if(location.pathname.startsWith("/dashboard")) {
+            document.body.classList.remove("dashboard")
+        } else if (location.pathname.startsWith("/dashboard")) {
+            document.body.classList.remove("authentication")
             document.body.classList.add("dashboard")
         }
             

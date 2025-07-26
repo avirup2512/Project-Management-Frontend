@@ -1,25 +1,25 @@
 import config from "../../config";
-let BoardService = (function ()
+let ProjectService = (function ()
 {
     let baseUrl = config.baseUrl;
-    function BoardService()
+    function ProjectService()
     {
         
     }
-    BoardService.prototype.getAllBoards = async function (token, projectId)
+    ProjectService.prototype.getAllProject = async function (token)
     {
-        const res = await fetch(baseUrl+'board/getAllBoard/'+projectId+'',{
+        const res = await fetch(baseUrl+'project/getAllProject',{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+token
-            },
+        },
         });
         return res.json();
     }
-    BoardService.prototype.createBoard = async function (params)
+    ProjectService.prototype.createProject = async function (params)
     {
-        const res = await fetch(baseUrl+'board/create',{
+        const res = await fetch(baseUrl+'project/create',{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -29,9 +29,9 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.editBoard = async function (params)
+    ProjectService.prototype.editProject = async function (params)
     {
-        const res = await fetch(baseUrl+'board/edit',{
+        const res = await fetch(baseUrl+'project/edit',{
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.searchUser = async function (keyword)
+    ProjectService.prototype.searchUser = async function (keyword)
     {
         const res = await fetch(baseUrl+'auth/search',{
         method: 'POST',
@@ -53,7 +53,7 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.getAllRoles = async function ()
+    ProjectService.prototype.getAllRoles = async function ()
     {
         const res = await fetch(baseUrl+'setting/getRoles',{
         method: 'GET',
@@ -64,7 +64,7 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.deleteBoard = async function (id)
+    ProjectService.prototype.deleteBoard = async function (id)
     {
         const res = await fetch(baseUrl+'board/delete',{
         method: 'DELETE',
@@ -76,7 +76,7 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.searchBoardUser = async function (keyword,boardId)
+    ProjectService.prototype.searchBoardUser = async function (keyword,boardId)
     {
         const res = await fetch(baseUrl+'auth/searchByBoardId',{
         method: 'POST',
@@ -89,7 +89,7 @@ let BoardService = (function ()
         return res.json();
     }
 
-    return BoardService;
+    return ProjectService;
 })()
 
-export default BoardService;
+export default ProjectService;

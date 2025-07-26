@@ -138,7 +138,7 @@ function ListItem({item,addList,properties})
                                     }} >
                                     {
                                         item.cards.map((e,i) => (
-                                            <Card onClick={(event)=>openCard(event,e)} item={e} boardId={item.board_id} listId={item.id} key={e.id}></Card>
+                                            <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} key={e.id}></Card>
                                         ))
                                     }
                                 </ReactSortable>

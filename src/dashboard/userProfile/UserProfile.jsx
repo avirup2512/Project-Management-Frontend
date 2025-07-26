@@ -1,20 +1,10 @@
 
 import { useContext, useEffect, useState } from "react";
 import { Button, Card, Container } from "react-bootstrap";
-import AuthService from "../../auth/service/AuthService";
+import { UserContext } from "../UserContext";
 function UserProfile({onTriggerDashboard})
 {
-    const [user, setUser] = useState({});
-    const authService = new AuthService();
-    useEffect(() => {
-        const getUser = async () => {
-            let token = localStorage.getItem("token");
-            const u = await authService.getUserDetails({token});
-            setUser(u);
-            console.log(u);
-        }
-        getUser();
-    },[])
+    const {loggedInUser} = useContext(UserContext);
 
     return (
         <>
@@ -22,9 +12,9 @@ function UserProfile({onTriggerDashboard})
             <Card style={{ width: '18rem' }}>
             <Card.Img variant="top" src="holder.js/100px180" />
             <Card.Body>
-                        <Card.Title>{ user?.data?.first_name } { user?.data?.last_name }</Card.Title>
+                        <Card.Title>{ loggedInUser?.data?.first_name } { loggedInUser?.data?.last_name }</Card.Title>
                 <Card.Text>
-                {user?.data?.email}
+                {loggedInUser?.data?.email}
                 </Card.Text>
                 <Button variant="primary">Update Password</Button>
             </Card.Body>
