@@ -14,6 +14,7 @@ import UserDefaultProject from "./userDefaultProject/UserDefaultProject";
 import ProjectService from "./service/ProjectService";
 import { setProjectList } from "./project/ProjectSlice";
 import { useDispatch } from "react-redux";
+import Footer from "./footer/Footer";
 function Dashboard({messageSenderDashboard})
 {
     const dispatch = useDispatch();
@@ -77,7 +78,7 @@ function Dashboard({messageSenderDashboard})
                 <UserContext.Provider value={{ loggedInUser, setLoggedInUser }}>
                     <div className="d-flex">
                         <Sidebar/>
-                    <div onMouseDown={mousedown} onMouseLeave={() => { setIsDown(false) }} onMouseUp={() => { setIsDown(false) }}
+                        <div onMouseDown={mousedown} onMouseLeave={() => { setIsDown(false) }} onMouseUp={() => { setIsDown(false) }}
                         onMouseMove={mousemove} className="p-4 w-100 overflow-auto dashboard">
                             {/* <h2>Welcome to the main content area</h2>
                             <p>This is your dashboard or whatever you want here.</p> */}
@@ -89,7 +90,8 @@ function Dashboard({messageSenderDashboard})
                             <Route path="list/:boardId" element={<ListContainer />}></Route>
                             <Route path="list/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
                             </Routes>
-                        </div>
+                    </div>
+                    <Footer></Footer>
                 </div>
                 
             </UserContext.Provider>

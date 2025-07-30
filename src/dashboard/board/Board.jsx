@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import BoardService from "../service/BoardService";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Dropdown, Form, Modal } from "react-bootstrap";
 import ListComponent from "../../shared/List";
 import debounce from "lodash.debounce";
 import SearchBox from "../../shared/SerachBox";
@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setBoard, setBoardList } from "./BoardSlice";
 import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles } from "../DashboardSlice";
+import "./Board.css";
 
 function Board({onTrigger})
 {
@@ -62,22 +63,22 @@ function Board({onTrigger})
     })
     
     useEffect(() => {
-        getBoard();
+        getBoard(projectParams.projectId);
         getRoles();
         console.log(projectList);
         
-    }, []);
+    }, [projectParams]);
     useEffect(() => {
         // if (boardSelector.board && boardSelector.board.edit)
         // {
         //     editBoard()
         // }
     }, [boardSelector])
-    const getBoard = async function ()
+    const getBoard = async function (projectId)
     {
         console.log(projectParams);
         
-        const board = await boardService.getAllBoards(localStorage.getItem("token"),projectParams.projectId);        
+        const board = await boardService.getAllBoards(localStorage.getItem("token"),projectId);        
         if(board.status && board.status == 200)
         {
             dispatch(setBoardList(board.data));
@@ -111,7 +112,7 @@ function Board({onTrigger})
                 if (board.status && board.status == 200)
                 {
                     setModalShow(false);
-                    getBoard();
+                    getBoard(projectParams.projectId);
                 }
             } else {
                 console.log(boardSelector.board);
@@ -127,10 +128,10 @@ function Board({onTrigger})
                 if (board.status && board.status == 200)
                 {
                     setModalShow(false);
-                    getBoard();
+                    getBoard(projectParams.projectId);
                 } else {
                     setModalShow(false);
-                    getBoard();
+                    getBoard(projectParams.projectId);
                 }
             }
         }
@@ -145,7 +146,7 @@ function Board({onTrigger})
             const board = await boardService.deleteBoard(id);
             if (board.status && board.status == 200)
             {
-                getBoard();
+                getBoard(projectParams.projectId);
             }
             
         }
@@ -240,10 +241,17 @@ function Board({onTrigger})
     }
     return (
         <>
-            <div className="header">
+            <div className="header d-flex align-center justify-content-space-between">
                 <h3 className="float-start">
                 Boards
                 </h3>
+                <Form.Select className="select" onChange={(e)=>{ navigate("../board/"+e.target.value+"")}}>
+                    {
+                        Object.entries(projectList).map(([index, item])=>{
+                            return <option value={item.id}> { item.name}</option>
+                    })
+                    }
+                </Form.Select>
                 <button className="btn btn-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Board</button>
             </div>
             <div className="clearfix"></div>

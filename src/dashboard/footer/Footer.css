@@ -1,0 +1,8 @@
+footer{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+    width: 84%;
+    padding: 13px;
+}

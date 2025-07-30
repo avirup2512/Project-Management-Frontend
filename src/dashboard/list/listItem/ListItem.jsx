@@ -9,9 +9,11 @@ import Menu from "../../../shared/Menu";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList, setCurrentCard } from "../ListSlice";
 import CardModal from "../../card/CardDetails";
-import { useNavigate } from "react-router-dom";
-function ListItem({item,addList,properties})
+import { useNavigate, useParams } from "react-router-dom";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+function ListItem({item,addList,properties,copyCard,provided})
 {
+    const { boardId } = useParams();
     const navigate = useNavigate();
     const allList = useSelector((e) => e.list.allList);
     const dispatch = useDispatch();
@@ -23,6 +25,7 @@ function ListItem({item,addList,properties})
     const [listEdit, seListEdit] = useState(false);
     const [menuShow, setMenuShow] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [lastPosition, setLastPosition] = useState(0);
 
     const [cardProperty, setCardProperty] = useState({
         completeCard:(id,value)=>{completeCard(id,value)}
@@ -37,22 +40,30 @@ function ListItem({item,addList,properties})
     useEffect(() => {
     }, []);
     useEffect(() => {   
+        console.log(item);
+        
         if (!addList)
-        setListName(item.name);
+            setListName(item.name);
+        if (item && item.cards)
+        {
+            setLastPosition(item.cards.length);
+            setCards(item?.cards);
+        }
+        
     }, [item]);
     const enableEditMode = function ()
     {
         setEditMode(true)
     }
-    const addListFunc = async() => {
+    const addListFunc = async (e) => {
+        e.preventDefault();
         if (listName)
         {
             const list = await listService.createList({ boardId: properties.boardId, name: listName, position: properties.lastPosition+1 });
             if (list.status && list.status == 200)
-            {
-                console.log(list);
-                
+            {                
                 properties.listAdded(list.data?.insertId);
+                setListName(" ");
             }
         }
     }
@@ -62,9 +73,11 @@ function ListItem({item,addList,properties})
     }
     const addCardFunc = async function (e)
     {        
+        e.preventDefault();
+        e.stopPropagation();
         if (cardName)
         {
-            const card = await cardService.createCard({ name: cardName, listId: item?.id, boardId: item?.board_id });
+            const card = await cardService.createCard({ name: cardName, listId: item?.id, boardId: item?.board_id, position:lastPosition });
             if (card.status && card.status == 200) {
                 const index = allList.findIndex(l => l.id === item.id);
                 const list = [...allList];
@@ -82,6 +95,7 @@ function ListItem({item,addList,properties})
     }
     const nameChange = async function (e)
     {
+        e.preventDefault();
         if (listName)
         {
             const list = await listService.editList({ name: listName, listId: item?.id, boardId: item?.board_id});
@@ -89,7 +103,11 @@ function ListItem({item,addList,properties})
             {
                 seListEdit(false);
                 setListName(listName);
-                properties.listEdited();                
+                properties.listEdited();
+                const listCopy = JSON.parse(JSON.stringify(allList));
+                const listIndex = listCopy.findIndex((l) => l.id == item.id);
+                listCopy[listIndex].name = listName;
+                dispatch(setAllList(listCopy));
             }
         }
     }
@@ -103,14 +121,92 @@ function ListItem({item,addList,properties})
     const completeCard = (cardId,value) => {
         properties.completeCard(item.id,cardId,value);
     }
+    const onDragEnd = async (evt) => {
+        console.log(evt);
+        // If dropped outside any droppable
+        const allCardCopy = JSON.parse(JSON.stringify(item?.cards));
+        let oldCardItem = {};
+        let newCardItem = {};
+        allCardCopy.forEach((e) => {
+            if (e.position == evt.newIndex) {
+                newCardItem = e;
+                newCardItem.position = evt.oldIndex 
+            } else if (e.position == evt.oldIndex) {
+                oldCardItem = e;
+                oldCardItem.position = evt.newIndex;
+            }
+        });
+        allCardCopy.sort((a, b) => {
+            return a.position > b.position ? 1 : -1
+        });
+        if (Object.keys(oldCardItem).length > 0 && Object.keys(newCardItem).length > 0)
+        {
+            const allCard = await listService.updateCardPositionSameList({ boardId, cards: [oldCardItem, newCardItem] });        
+            if(allCard.status && allCard.status == 200)
+            {
+                const index = allList.findIndex(l => l.id === item.id);
+                const list = JSON.parse(JSON.stringify(allList));
+                const listObj = { ...list[index] };                        
+                listObj.cards = allCardCopy;
+                list[index] = listObj;
+                dispatch(setAllList(list));
+                setCards(allCardCopy)
+            }
+        }
+    }
+    const onItemAdd = async (evt) => {
+        console.log("ADDED");
+        console.log(evt);
+        console.log(evt.clone.dataset);
+        console.log(evt.to.parentElement.dataset);
+        
+        const movedCard = await listService.updateCardPosition({ boardId, cardId: evt.clone.dataset.cardId, addedListId: evt.to.parentElement.dataset.listId, deletedListId: evt.clone.dataset.listId, position:evt.newIndex });
+        if (movedCard.status && movedCard.status == 200)
+        {
+            const listFromDeletedIndex = allList.findIndex(l => l.id == evt.clone.dataset.listId);
+            const listToAddedIndex = allList.findIndex(l => l.id == evt.to.parentElement.dataset.listId);
+            const listCopy = JSON.parse(JSON.stringify(allList));
+            const listFromDeleted = { ...listCopy[listFromDeletedIndex] };
+            console.log(listFromDeleted);
+            
+            const listToAdded = { ...listCopy[listToAddedIndex] };
+            console.log(listToAdded);
+            
+            const card = listFromDeleted.cards.find((e) => { return e.id == evt.clone.dataset.cardId });
+            console.log(card);
+            const nextAllCardPositionMinus = []
+            const cardIndex = listFromDeleted.cards.findIndex(card => card.id == evt.clone.dataset.cardId);
+            listFromDeleted.cards.splice(cardIndex, 1);
+            listToAdded.cards.splice(evt.newIndex, 0, card);
+            const nextAllCardPositionPlus = []
+            listToAdded.cards.find((e, i) => {
+                if (i > evt.newIndex)
+                {
+                    nextAllCardPositionPlus.push(e.id);
+                }
+            })
+            listFromDeleted.cards.find((e, i) => {
+                if (i >= cardIndex)
+                {
+                    nextAllCardPositionMinus.push(e.id);
+                }
+            })
+            console.log(nextAllCardPositionPlus);
+            
+            listCopy[listFromDeletedIndex] = listFromDeleted
+            listCopy[listToAddedIndex] = listToAdded;
+            const updateCardPosition = await listService.updateNextAllCardPosition({boardId,listId:item.id,cardsPositionToBePlus:nextAllCardPositionPlus, cardsPositionToBeMinus:nextAllCardPositionMinus})
+            dispatch(setAllList(listCopy));
+        }
+    }
     return (
         <>
-            <div className={addList ? "cursor-pointer listItem" : "listItem"} data-id={item?.id} data-boardid={item?.board_id}
+            <div className={addList ? "cursor-pointer listItem margin-left-auto" : "listItem"} data-id={item?.id} data-boardid={item?.board_id}
             data-name={item?.name}>
                 {
                     !addList &&
                     <div className="fetchedList">
-                            <div className="">
+                            <div className="" {...provided.dragHandleProps}>
                                 <div className="d-flex align-center justify-content-space-between">
                                         <div className="width-100">
                                             {
@@ -118,11 +214,13 @@ function ListItem({item,addList,properties})
                                                 <p onClick={() => { seListEdit(true) }} className="mb-0 p-1 name handle">{item?.name}</p>
                                                 ||
                                                 listEdit && 
-                                                <Form.Group>
-                                                    <Form.Control autoFocus={true} className="listName"
+                                                <Form onSubmit={nameChange}>
+                                                    <Form.Group>
+                                                        <Form.Control autoFocus={true} className="listName"
                                                         value={listName} type="input" onInput={(e) => { setListName(e.target.value) }}
                                                         onBlurCapture={nameChange}></Form.Control>
-                                                </Form.Group>
+                                                    </Form.Group>
+                                                </Form>
                                             }
                                         </div>
                                     <i onClick={(e) => { setMenuShow(true)}} className="bi bi-three-dots cursor-pointer"></i>
@@ -130,15 +228,17 @@ function ListItem({item,addList,properties})
                                 </div>
                             </div>
                             <hr></hr>
-                            <div className="scroll">
-                                <ReactSortable className="mb-2" list={item.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {    
-                                        
+                            <div className="scroll" data-list-id={item?.id}>
+                                <ReactSortable className="mb-2 ss" list={item.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {    
+                                    console.log(newState);
+                                    
+                                       // onDragEnd(newState)
                                     setCards(newState); 
                                         properties.updateCards(item.id, newState);
-                                    }} >
+                                    }} animation={150} group={'shared'} onAdd={onItemAdd} onUpdate={onDragEnd} >
                                     {
                                         item.cards.map((e,i) => (
-                                            <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} key={e.id}></Card>
+                                            <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} copyCardProps={copyCard} key={e.id}></Card>
                                         ))
                                     }
                                 </ReactSortable>
@@ -152,11 +252,14 @@ function ListItem({item,addList,properties})
                             }
                             {
                                 cardEditMode &&
-                                <Form.Group>
+                                <Form onSubmit={addCardFunc}>
+                                    <Form.Group>
                                     <Form.Control type="text" onChange={(e)=>{setCardName(e.target.value)}}></Form.Control>
                                     <Button className="mt-2" variant="primary" onClick={addCardFunc}  size="sm">Add Card</Button>
                                     <i onClick={()=>{setCardEditMode(false)}} className="bi bi-plus primary d-inline-block crossButton"></i>
                                 </Form.Group>
+                                </Form>
+                                
                             }
                             
                     </div>
@@ -171,13 +274,16 @@ function ListItem({item,addList,properties})
                 }
                 {
                     editMode &&
+                    <Form onSubmit={addListFunc}>
                     <Form.Group>
                         <Form.Control type="text" onChange={(e)=>{setListName(e.target.value)}}></Form.Control>
                         <Button className="mt-2" variant="primary" onClick={addListFunc} size="sm">Add List</Button>
                         <i onClick={()=>{setEditMode(false)}} className="bi bi-plus primary d-inline-block crossButton"></i>
                     </Form.Group>
+                    </Form>
                 }
-                {showModal && <CardModal boardId={item.board_id} listId={item.id} closeCall={()=> setShowModal(false) } />}
+                {showModal && <CardModal boardId={item.board_id} listId={item.id} closeCall={() => setShowModal(false)} />}
+                
             </div>
         </>
     )

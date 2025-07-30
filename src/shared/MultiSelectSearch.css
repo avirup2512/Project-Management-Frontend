@@ -31,7 +31,7 @@
 .result .item.disabled {
     background:#dfdede
 }
-.users .user
+/* .users .user
 {
     display: inline-block;
     background: #2196F3;
@@ -40,7 +40,7 @@
     margin: 5px;
     color: #fff;
     padding-left: 5px;
-}
+} */
 .users .user .remove {
     cursor: pointer;
 }

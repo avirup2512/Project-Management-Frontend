@@ -8,7 +8,7 @@ import Menu from "../../shared/Menu";
 import { useParams } from "react-router-dom";
 import ConfirmationModal from "../../shared/ConfirmationModal";
 // import ListService from "../../service/ListService";
-function Card({item,listId,onClick})
+function Card({item,listId,copyCardProps,onClick})
 {
     const { boardId } = useParams();
     const allList = useSelector((e) => e.list.allList);
@@ -16,7 +16,9 @@ function Card({item,listId,onClick})
     const cardService = new CardService();
     const [menuShow, setMenuShow] = useState(false);
     const [menuProperties, setMenuProperties] = useState({
-        items: [{ name: "Delete Card", action: () => { deleteCard() } }],
+        items: [{ name: "Copy Card", action: () => { setMenuShow(false), copyCardProps() } },
+            { name: "Delete Card", action: () => { deleteCard() } }
+        ],
         closeMenu: () => { setMenuShow(false) }
     });
     const [confirmationModalProp, setConfirmationProp] = useState({
@@ -45,6 +47,11 @@ function Card({item,listId,onClick})
         setMenuShow(false);
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"tag", message: "Are you sure want to delete Card?" }))
     }
+    const copyCard = async () => {
+        console.log("HI");
+        copyCardProps();
+        // const copiedCard = await cardService.copyCard({boardId,listId,cardId:item.id, listIds:[58,56]});
+    }
     const onConfirm = async () => {
         const params = { boardId, listId, cardId: item?.id };
         const deletedCard = await cardService.deleteCard(params);
@@ -63,7 +70,7 @@ function Card({item,listId,onClick})
     }
     return (
         <>
-            <div className="cardItem" onClick={onClick}>
+            <div className="cardItem" onClick={onClick} data-card-id={item.id} data-list-id={listId}>
                 <div className="d-flex align-center justify-content-flex-start">
                     <Form>
                         <Form.Check isValid={true} type="checkbox"
@@ -74,6 +81,22 @@ function Card({item,listId,onClick})
                     <i onClick={(e) => { e.stopPropagation(); setMenuShow(true)}} className="bi bi-three-dots cursor-pointer menuIcon"></i>
                     <Menu properties={menuProperties} show={menuShow}></Menu>
                 </div>
+                <div className="">
+                    <p className="font-12">{ item?.description}</p>
+                </div>
+                {
+                    item && item.hasOwnProperty("users") &&
+                    <div className="users mt-2">
+                        {
+                        item?.users.map((e,i) => {
+                                return <>
+                                    {
+                                        e.name  && <span key={i} className="user">{ e.name[0]}</span>}
+                                </>
+                            })
+                        }
+                </div>
+                }
                 {
                     item && item.hasOwnProperty("tags") &&
                     <div className="tags mt-2">
@@ -88,7 +111,7 @@ function Card({item,listId,onClick})
                 </div>
                 }
             </div>
-            <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
+            <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp} />
         </>
     )
 }

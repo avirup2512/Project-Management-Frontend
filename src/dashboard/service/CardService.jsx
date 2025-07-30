@@ -183,6 +183,18 @@ let CardService = (function ()
         });
         return res.json();
     }
+    CardService.prototype.copyCard = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/copyCard',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     return CardService;
 })()
 

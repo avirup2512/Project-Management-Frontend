@@ -56,9 +56,9 @@ function Project()
     })
     const [listProperties, setListProperties] = useState({
         users:[],
-        edit: function () { editBoard() },
+        edit: function () { editProject() },
         delete: function (id) { deleteBoard(id, false) },
-        open: function(id) { openBoard(id) }
+        open: function(id) { openProject(id) }
     })
     
     useEffect(() => {
@@ -101,7 +101,7 @@ function Project()
                 if (project.status && project.status == 200)
                 {
                     setModalShow(false);
-                    getBoard();
+                    getAllProject();
                 }
             } else {
                 console.log(projectSelector.project);
@@ -140,7 +140,7 @@ function Project()
             
         }
     }
-    const editBoard = async function ()
+    const editProject = async function ()
     {
         setModalShow(true);
         // setSelectedBoards((p)=>({...p,}))
@@ -218,9 +218,11 @@ function Project()
             deleteBoard(currentId, true)
         }
     }
-    const openBoard = function (id)
+    const openProject = function (id)
     {
-        navigate("../list/"+id)
+        console.log(id);
+        
+        navigate("../board/"+id)
     }
     return (
         <>
@@ -247,7 +249,7 @@ function Project()
                 <div className="modal show d-block" tabIndex="-1">
                     <Modal show={showAddModal} size="lg">
                         <Modal.Header closeButton onClick={() => setModalShow(false)}>
-                        <Modal.Title>Add Board</Modal.Title>
+                        <Modal.Title>Add Project</Modal.Title>
                         </Modal.Header>
 
                         <Modal.Body>

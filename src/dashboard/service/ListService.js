@@ -53,6 +53,42 @@ let ListService = (function ()
         });
         return res.json();
     }
+    ListService.prototype.updateCardPosition = async function (params)
+    {
+        const res = await fetch(baseUrl+'list/updateCardList',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    ListService.prototype.updateCardPositionSameList = async function (params)
+    {
+        const res = await fetch(baseUrl+'list/updateCardSameList',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    ListService.prototype.updateNextAllCardPosition = async function (params)
+    {
+        const res = await fetch(baseUrl+'list/updateCardPosition',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     return ListService;
 })()
 
