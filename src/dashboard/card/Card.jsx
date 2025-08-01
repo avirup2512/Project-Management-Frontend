@@ -16,7 +16,7 @@ function Card({item,listId,copyCardProps,onClick})
     const cardService = new CardService();
     const [menuShow, setMenuShow] = useState(false);
     const [menuProperties, setMenuProperties] = useState({
-        items: [{ name: "Copy Card", action: () => { setMenuShow(false), copyCardProps() } },
+        items: [{ name: "Copy Card", action: () => { setMenuShow(false), copyCardProps({cardId:item.id}) } },
             { name: "Delete Card", action: () => { deleteCard() } }
         ],
         closeMenu: () => { setMenuShow(false) }

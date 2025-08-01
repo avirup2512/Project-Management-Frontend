@@ -16,8 +16,8 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
   }
   const edit = function ()
   {
-    //let obj = {...item,edit:true};
-    //dispatch(setBoard(obj));
+    let obj = {...item,edit:true};
+    dispatch(setBoard(obj));
     properties.edit();
   }
   const deleteAction = function ()

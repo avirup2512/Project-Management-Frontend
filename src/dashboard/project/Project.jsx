@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import ListComponent from "../../shared/List";
 import debounce from "lodash.debounce";
@@ -8,15 +8,19 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setProject, setProjectList } from "./ProjectSlice";
 import { setUserList } from "../userProfile/UserSlice";
-import { setAllRoles } from "../DashboardSlice";
+import { setAllRoles, setPage, setPaginateHappen, setProjectPaginationObject } from "../DashboardSlice";
 import ProjectService from "../service/ProjectService";
 import BoardService from "../service/BoardService";
 
 function Project()
 {
+    const hasMounted = useRef(false);
     const userState = useSelector((state) => state.auth.user);
     const projectSelector = useSelector((state) => state.project);
     const allRoles = useSelector((e) => e.dashboard.allRoles);
+    const paginateHappen = useSelector((p) => p.dashboard.paginateHappen);
+    const paginationObject = useSelector((e) => e.dashboard.projectPaginationObject);
+    const defaultPaginationObject = useSelector((e) => e.dashboard.defaultPaginationObject);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -60,16 +64,35 @@ function Project()
         delete: function (id) { deleteBoard(id, false) },
         open: function(id) { openProject(id) }
     })
-    
     useEffect(() => {
+        dispatch(setPage("project"));
+        dispatch(setProjectPaginationObject(defaultPaginationObject));
+        dispatch(setPaginateHappen(!paginateHappen));
+        // getAllProject();
+    }, []);
+    useEffect(() => {
+        if (!hasMounted.current) {
+            hasMounted.current = true; // ✅ skip first run
+            return;
+        }
+        console.log(paginationObject);
+        
         getAllProject();
         getRoles();
-    }, []);
+    }, [paginateHappen]);
     const getAllProject = async function ()
     {
-        const project = await projectService.getAllProject(localStorage.getItem("token"));        
+        console.log("HELLO");
+        
+        console.log(paginationObject);
+        
+        const project = await projectService.getAllProject(localStorage.getItem("token"),paginationObject.itemPerPage, paginationObject.currentOffset);        
         if(project.status && project.status == 200)
         {
+            const { itemPerPage } = paginationObject;
+            const items = { items: Math.ceil(project?.totalCount / itemPerPage), totalCount: project?.totalCount };
+            console.log({...paginationObject,...items});
+            dispatch(setProjectPaginationObject({...paginationObject,...items}))
             dispatch(setProjectList(project.data));
             setEmpty(false)
         } 

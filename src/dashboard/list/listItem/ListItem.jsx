@@ -11,6 +11,7 @@ import { setAllList, setCurrentCard } from "../ListSlice";
 import CardModal from "../../card/CardDetails";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import ConfirmationModal from "../../../shared/ConfirmationModal";
 function ListItem({item,addList,properties,copyCard,provided})
 {
     const { boardId } = useParams();
@@ -27,11 +28,21 @@ function ListItem({item,addList,properties,copyCard,provided})
     const [showModal, setShowModal] = useState(false);
     const [lastPosition, setLastPosition] = useState(0);
 
+    const [confirmationModalProp, setConfirmationProp] = useState({
+        showModal: false,
+        message: "",
+        type:"",
+        action: function (t) { onConfirm(t) },
+        close: function () { closeModal() }
+    });
+
     const [cardProperty, setCardProperty] = useState({
         completeCard:(id,value)=>{completeCard(id,value)}
     })
     const [menuProperties, setMenuProperties] = useState({
-        items: [{ name: "Add Card", action: () => { addCard() } }],
+        items: [{ name: "Add Card", action: () => { addCard() } },
+            { name: "Archive List", action: () => { archiveList() } }
+        ],
         closeMenu:()=>{setMenuShow(false)}
     })
     const listService = new ListService();
@@ -39,9 +50,7 @@ function ListItem({item,addList,properties,copyCard,provided})
 
     useEffect(() => {
     }, []);
-    useEffect(() => {   
-        console.log(item);
-        
+    useEffect(() => {           
         if (!addList)
             setListName(item.name);
         if (item && item.cards)
@@ -70,6 +79,11 @@ function ListItem({item,addList,properties,copyCard,provided})
     const addCard = function (e)
     {        
         setCardEditMode(true)
+    }
+    const archiveList = async function ()
+    {
+        setMenuShow(false)
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"List", message: "Are you sure want to archive the list?" }))
     }
     const addCardFunc = async function (e)
     {        
@@ -155,11 +169,6 @@ function ListItem({item,addList,properties,copyCard,provided})
         }
     }
     const onItemAdd = async (evt) => {
-        console.log("ADDED");
-        console.log(evt);
-        console.log(evt.clone.dataset);
-        console.log(evt.to.parentElement.dataset);
-        
         const movedCard = await listService.updateCardPosition({ boardId, cardId: evt.clone.dataset.cardId, addedListId: evt.to.parentElement.dataset.listId, deletedListId: evt.clone.dataset.listId, position:evt.newIndex });
         if (movedCard.status && movedCard.status == 200)
         {
@@ -198,6 +207,22 @@ function ListItem({item,addList,properties,copyCard,provided})
             const updateCardPosition = await listService.updateNextAllCardPosition({boardId,listId:item.id,cardsPositionToBePlus:nextAllCardPositionPlus, cardsPositionToBeMinus:nextAllCardPositionMinus})
             dispatch(setAllList(listCopy));
         }
+    }
+    const closeModal = () => {
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }));
+    }
+    const onConfirm = async () => {
+        // const params = { boardId, listId, cardId: item?.id };
+        // const deletedCard = await cardService.deleteCard(params);
+        // if (deletedCard.status && deletedCard.status == 200)
+        // {
+        //     let list = JSON.parse(JSON.stringify(allList))
+        //     let index = list.findIndex(l => l.id === listId);
+        //     list[index].cards = list[index].cards.filter((e) => { return e.id != item?.id });
+        //     console.log(list[index].cards);
+        //     dispatch(setAllList(list))
+        //     setMenuShow(false);
+        // }
     }
     return (
         <>
@@ -238,7 +263,7 @@ function ListItem({item,addList,properties,copyCard,provided})
                                     }} animation={150} group={'shared'} onAdd={onItemAdd} onUpdate={onDragEnd} >
                                     {
                                         item.cards.map((e,i) => (
-                                            <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} copyCardProps={copyCard} key={e.id}></Card>
+                                            <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} copyCardProps={(e) => {copyCard({...e,listId:item.id})}} key={e.id}></Card>
                                         ))
                                     }
                                 </ReactSortable>
@@ -283,8 +308,8 @@ function ListItem({item,addList,properties,copyCard,provided})
                     </Form>
                 }
                 {showModal && <CardModal boardId={item.board_id} listId={item.id} closeCall={() => setShowModal(false)} />}
-                
             </div>
+                <ConfirmationModal onConfirm={onConfirm} properties={confirmationModalProp}/>
         </>
     )
 }

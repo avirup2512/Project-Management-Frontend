@@ -6,9 +6,9 @@ let ProjectService = (function ()
     {
         
     }
-    ProjectService.prototype.getAllProject = async function (token)
+    ProjectService.prototype.getAllProject = async function (token,itemLimit,offset)
     {
-        const res = await fetch(baseUrl+'project/getAllProject',{
+        const res = await fetch(baseUrl+'project/getAllProject/'+itemLimit+'/'+offset+'',{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

@@ -8,6 +8,7 @@ body.authentication {
 body.dashboard{
   background-color: #fff;
   font-family: Helvetica;
+  font-size: 14px;
 }
 .appAlert {
   position: absolute;
@@ -55,6 +56,9 @@ body.dashboard{
 }
 .font-12{
   font-size: 14px;
+}
+.mr-auto {
+  margin-right: auto;
 }
 .user{
     display: inline-block;

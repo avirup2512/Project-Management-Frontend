@@ -4,7 +4,7 @@ import { Button, Form, Modal } from 'react-bootstrap';
 import "./MultiSelectSearch.css";
 import { useEffect, useState } from 'react';
 import Select from 'react-select'
-function MultiSelectSearch({ properties, item }) {
+function MultiSelectSearch({ properties, item,copyCardData }) {
     const [selectedItem, setSelectedItem] = useState([]);
     useEffect((e) => {
         console.log(e);
@@ -16,7 +16,7 @@ function MultiSelectSearch({ properties, item }) {
     }
     const saveAction = function ()
     {
-        properties.onSubmit(selectedItem);
+        properties.onSubmit({selectedItem,...copyCardData});
     }
     const listSelect = (e) => {
         console.log(e);

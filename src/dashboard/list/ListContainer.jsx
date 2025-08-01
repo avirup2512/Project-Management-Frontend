@@ -9,7 +9,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAllList } from "./ListSlice";
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import MultiSelectSearch from "../../shared/MultiSelectSearch";
+import CardService from "../service/CardService";
+import Filter from "../../shared/Filter";
 function ListContainer({ onTrigger }) {
+    const cardService = new CardService();
     const allList = useSelector((e) => e.list.allList);
     const dispatch = useDispatch();
     let lists = [];
@@ -21,8 +24,14 @@ function ListContainer({ onTrigger }) {
     const [lastPosition, setLastPosition] = useState(0);
     const [showListModal, setShowListModal] = useState(false)
     const [listForMultiSelect, setListForMultiSelect] = useState([]);
+    const [copyCardData, setCopyCardData] = useState({});
+    const [filterItems, setFilterItems] = useState([
+        { value: "completeCard", label: "Show Complete Card" },
+        { value: "pendingCard", label: "Show Pending Card" },
+        {value:"yourCard", label:"Show Your Card"},
+    ])
     let [multiSearchProperties, setSerachProperties] = useState({
-    onSubmit: function (e) { copyCard(e) },
+    onSubmit: function (e) {  copyCard(e) },
     close: function (e) { setShowListModal(false) }
     });
     const [listProperty, setListProperties] = useState({
@@ -132,8 +141,24 @@ function ListContainer({ onTrigger }) {
         width: "100%",
         gap:"20px"
     });
-    const copyCard = (e) => {
+    const copyCard = async function (e) {
         console.log(e);
+        const listIds = e.selectedItem.length > 0 ? e.selectedItem.map((e) => { return e.id }) : [];
+        console.log(listIds);
+        
+        const copiedCard = await cardService.copyCard({ boardId, listId: e.listId, cardId: e.cardId, listIds });
+        if (copiedCard.status && copiedCard.status == 200)
+        {
+            setShowListModal(false);
+        }
+    }
+    const openListModal = function (e) {
+        console.log(e);
+        
+        setCopyCardData(e);
+        setShowListModal(true)
+    }
+    const filterList = async () => {
         
     }
     return (
@@ -143,6 +168,7 @@ function ListContainer({ onTrigger }) {
                     <Button variant="primary" onClick={() => addList(false)}>Add List</Button>
                 </div> */}
                 <>
+                    <Filter item={filterItems} filter={filterList} />
                     <div className="listContainer d-flex">
                         <DragDropContext onDragEnd={changePosition}>
                         <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
@@ -159,7 +185,7 @@ function ListContainer({ onTrigger }) {
                                                 <div ref={draggableProvided.innerRef}
                                                 
                                                     {...draggableProvided.draggableProps}>
-                                                    <ListItem copyCard={()=> setShowListModal(true) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
+                                                    <ListItem copyCard={(e)=> openListModal(e) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
                                                 </div>
                                             )}
                                         </Draggable>
@@ -170,7 +196,7 @@ function ListContainer({ onTrigger }) {
                         </Droppable>
                         </DragDropContext>
                         {
-                            showListModal && <MultiSelectSearch properties={multiSearchProperties} item={listForMultiSelect} />
+                            showListModal && <MultiSelectSearch copyCardData={copyCardData} properties={multiSearchProperties} item={listForMultiSelect} />
                         }
                     </div>
                     {/* <ReactSortable list={allList.map(item => ({ ...item }))} chosenClass={'chosen'} sort={true} setList={(list) => {

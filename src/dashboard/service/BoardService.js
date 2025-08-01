@@ -6,9 +6,9 @@ let BoardService = (function ()
     {
         
     }
-    BoardService.prototype.getAllBoards = async function (token, projectId)
+    BoardService.prototype.getAllBoards = async function (token, projectId,itemLimit, offset)
     {
-        const res = await fetch(baseUrl+'board/getAllBoard/'+projectId+'',{
+        const res = await fetch(baseUrl+'board/getAllBoard/'+projectId+'/'+itemLimit+'/'+offset+'',{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
