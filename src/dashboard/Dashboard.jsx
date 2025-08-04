@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Board from "./board/Board";
-import Sidebar from "./sidebar/SideBar";
+import Sidebar from "./sidebar/Sidebar";
 import Topmenu from "./topMenu/Topmenu";
 import { useEffect, useState } from "react";
 import { DashboardMessageContext } from "./DashboardMessageContext";
