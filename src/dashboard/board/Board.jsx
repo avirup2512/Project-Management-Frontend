@@ -14,9 +14,10 @@ import "./Board.css";
 
 function Board({ paginate }) {
     const hasMounted = useRef(false);
-    const {projectId} = useParams();
+    const { projectId } = useParams();
     const userState = useSelector((state) => state.auth.user);
     const boardSelector = useSelector((state) => state.board);
+    const projectSelector = useSelector((state) => state.project);
     const boardList = useSelector((state) => state.board.boardList);
     const allRoles = useSelector((e) => e.dashboard.allRoles);
     const projectList = useSelector((e) => e.project.projectList);
@@ -51,7 +52,7 @@ function Board({ paginate }) {
         onSearch: function (e) { searchUser(e) },
         onItemSelect: function (i, property) { onUserSelect(i, property) },
         onItemRemove: function (id, property) { onUserRemoved(id, property) },
-        onRoleUpdate: function (role, property, id) { onRoleUpdate(role, property, id) }
+        onRoleUpdate: function (role, property, id) { onRoleUpdate(role, property, id) },
     });
     const [confirmationModalProp, setConfirmationProp] = useState({
         showModal: false,
@@ -66,13 +67,8 @@ function Board({ paginate }) {
         open: function (id) { openBoard(id) }
     })
     useEffect(() => {
-        console.log("JIK");
-
         dispatch(setPage("board"));
         dispatch(setBoardPaginationDefault(defaultPaginationObject));
-        console.log(defaultPaginationObject);
-        console.log(paginationObject);
-
         dispatch(setPaginateHappen(!paginateHappen));
         return () => {
             console.log('Component unmounted');
@@ -115,6 +111,8 @@ function Board({ paginate }) {
     }
     const addBoard = async function () {
         let user = [];
+        console.log(boardSelector);
+        
         if (boardSelector.board.name) {
             if (!boardSelector.board.id) {
                 if (boardSelector.board.user && boardSelector.board.user.length > 0) {
@@ -161,20 +159,12 @@ function Board({ paginate }) {
         }
     }
     const editBoard = async function () {
-        console.log(boardSelector);
-
-        // item.user.forEach((e) => {
-        //     e.selected = true;
-        // })
         setModalShow(true);
-
-        // setSelectedBoards((p)=>({...p,}))
-        // setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
     }
     const fetchUsers = async (params) => {
         console.log(params);
 
-        const user = await boardService.searchUser(params);
+        const user = await boardService.searchUser(params, projectId);
         if (user.status && user.status == 200) {
             setUser(user.data);
             dispatch(setUserList(user.data));
@@ -239,6 +229,15 @@ function Board({ paginate }) {
     const openBoard = function (id) {
         navigate("../list/" + id)
     }
+    const addAllProjectMember = () => {
+        const projectList = JSON.parse(JSON.stringify(projectSelector.projectList));
+        const users = projectList[projectId].user;
+        const updatedBoard = {
+            ...boardSelector.board,
+            user: users,
+        };
+        dispatch(setBoard(updatedBoard));
+    }
     return (
         <>
             <div className="header d-flex align-center justify-content-space-between">
@@ -263,7 +262,7 @@ function Board({ paginate }) {
                     </> :
                     <>
                         {Object.entries(boardList).map(([index, item]) => {
-                            return <ListComponent key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                            return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                         })}
                     </>
             }
@@ -280,7 +279,7 @@ function Board({ paginate }) {
                                     <Form.Label>Name</Form.Label>
                                     <Form.Control type="input" value={boardSelector.board.name} onChange={(e) => dispatch(setBoard({ ...boardSelector.board, name: e.target.value }))} required></Form.Control>
                                 </Form.Group>
-                                <SearchBox properties={multiSearchProperties}></SearchBox>
+                                <SearchBox properties={multiSearchProperties} addAllProjectMember={addAllProjectMember} type="board"></SearchBox>
                                 <Form.Group className="mb-3" controlId="formBasicCheckbox">
                                     <Form.Check onChange={(e) => setPublic(e.target.value)} type="checkbox" label="is Public" />
                                 </Form.Group>

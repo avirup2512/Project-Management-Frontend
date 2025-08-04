@@ -110,6 +110,8 @@ function Project()
     const addProject = async function ()
     {        
         let user = [];
+        console.log(projectSelector);
+        
         if (projectSelector.project.name) {
             if (!projectSelector.project.id)
             {
@@ -136,7 +138,7 @@ function Project()
                             user.push({user_id:e.id,role:e.role_id})
                     })
                 }
-                const project = await projectService.editProject({projectId:projectSelector.board.id, name: projectSelector.project.name, isPublic: projectSelector.project.isPublic ? 1 : 0, users: user});
+                const project = await projectService.editProject({projectId:projectSelector.project.id, name: projectSelector.project.name, isPublic: projectSelector.project.isPublic ? 1 : 0, users: user});
                 if (project.status && project.status == 200)
                 {
                     setModalShow(false);
@@ -165,6 +167,8 @@ function Project()
     }
     const editProject = async function ()
     {
+        console.log(projectSelector.project);
+        
         setModalShow(true);
         // setSelectedBoards((p)=>({...p,}))
         // setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
@@ -172,11 +176,14 @@ function Project()
     const fetchUsers = async (params) => {
         console.log(params);
         
-        const user = await boardService.searchUser(params);
+        const user = await projectService.searchUser(params);
         if (user.status && user.status == 200)
         {
             setUser(user.data);
             dispatch(setUserList(user.data));
+        } else {
+            setUser([]);
+            dispatch(setUserList([]));
         }
     }
     const debouncedFetchUsers = useCallback(debounce(fetchUsers, 400), []);
@@ -264,7 +271,7 @@ function Project()
                 </> :
                     <>
                     { Object.entries(projectSelector.projectList).map(([index, item])=>{
-                        return <ListComponent  key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                        return <ListComponent type="project"  key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                     }) }
                 </>
             }
@@ -281,7 +288,7 @@ function Project()
                                     <Form.Label>Name</Form.Label>
                                     <Form.Control type="input" value={projectSelector.project.name} onChange={(e)=>dispatch(setProject({...projectSelector.project,name:e.target.value}))} required></Form.Control>
                                 </Form.Group>
-                                <SearchBox properties={multiSearchProperties}></SearchBox>
+                                <SearchBox properties={multiSearchProperties} type="project"></SearchBox>
                                 <Form.Group className="mb-3" controlId="formBasicCheckbox">
                                     <Form.Check onChange={(e)=>setPublic(e.target.value)} type="checkbox" label="is Public" />
                                 </Form.Group>

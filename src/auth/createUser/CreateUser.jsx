@@ -27,7 +27,8 @@ function CreateUser()
         param.socialLogin = true;
         param.uniqueIdentifier = decoded.sub;
         authService.createUserFromSocialLogin(param)
-        .then(function (e) {
+            .then(function (e) {
+            
             if (e.status && e.status == 200)
             {
                 localStorage.setItem('token', e.token);
@@ -45,7 +46,11 @@ function CreateUser()
         if(passwordValidate())
         authService.createUser({firstName,lastName,email,password})
             .then(function (e) {
-            console.log(e);
+            if (e.status && e.status == 200)
+            {
+                localStorage.setItem('token', e.token);
+                navigate("/dashboard");
+            }
         })
     }
     const passwordValidate = function ()

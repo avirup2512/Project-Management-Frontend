@@ -4,8 +4,11 @@ import "./TextEditor.css";
 import { Button } from 'react-bootstrap';
 import { ContentState } from "draft-js";
 import { stateFromHTML } from 'draft-js-import-html';
+import ReactQuill from 'react-quill-new';
 
 function TextEditorComponent(props) {
+  const [value, setValue] = useState('');
+
   useEffect(() => {    
     if (props.hasValue)
     {
@@ -13,9 +16,8 @@ function TextEditorComponent(props) {
       setEditorState(EditorState.createWithContent(commentText));
     }
   },[props])
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  const editorChange = (e) => {    
-      setEditorState(e);
+  const editorChange = (e) => {   
+    setValue(e)
   }
   const toggleBlockType = (blockType) => {
     editorChange(
@@ -40,11 +42,12 @@ function TextEditorComponent(props) {
         }
       }
   const submit = () => {
-    props.onSubmit(editorState);
+    props.onSubmit(value);
+    setValue('');
   }
   return (
     <div className='editor'>
-      <BlockStyleControls editorState={editorState} onToggle={toggleBlockType} />
+      {/* <BlockStyleControls editorState={editorState} onToggle={toggleBlockType} />
       <InlineStyleControls
                 editorState={editorState}
                 onToggle={toggleInlineStyle}
@@ -52,7 +55,11 @@ function TextEditorComponent(props) {
       <hr></hr>
       <Editor editorState={editorState} onChange={editorChange} blockStyleFn={getBlockStyle}
                   placeholder="Add Comment."
-                  spellCheck={true}/>
+                  spellCheck={true}/> */}
+      <ReactQuill theme="snow"
+        value={value}
+        onChange={editorChange}
+        placeholder="Write something here..."/>
       <Button onClick={submit}>Add Comment</Button>
     </div>
   );

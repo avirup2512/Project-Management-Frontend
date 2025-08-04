@@ -1,3 +1,4 @@
+@import 'react-quill-new/dist/quill.snow.css';
 .editor {
     background:#fff;
     border:1px solid #ccc;

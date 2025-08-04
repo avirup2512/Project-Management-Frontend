@@ -7,9 +7,12 @@ import { jwtDecode } from 'jwt-decode';
 import AuthService from "../service/AuthService";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../AuthSlice";
+import { useState } from "react";
 
 function Login({messageSenderLogin})
 {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const dispatch = useDispatch();
 
     const authService = new AuthService('');
@@ -42,11 +45,26 @@ function Login({messageSenderLogin})
     const handleError = () => {
         console.error('Login Failed');
     };
+    const login = async (e) => {
+        e.preventDefault();
+        const loggedIn = await authService.login({ email, password, socialLogin: false });
+        if (loggedIn.status && loggedIn.status == 200)
+        {
+            dispatch(setUser(loggedIn.data));
+            localStorage.setItem('token', loggedIn.token);
+            navigate("/dashboard");
+            messageSenderLogin({ message: loggedIn.message, status: 200 });
+        }else if (e.status && e.status == 404)
+        {
+            messageSenderLogin({ message: e.message, status: 404 });
+        }
+        
+    }
     return (
-        <Form>
+        <Form onSubmit={login}>
         <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Label>Email address</Form.Label>
-            <Form.Control type="email" />
+            <Form.Control onChange={(e) => setEmail(e.target.value)} type="email" />
             {/* <Form.Text className="text-muted">
             We'll never share your email with anyone else.
             </Form.Text> */}
@@ -54,13 +72,13 @@ function Login({messageSenderLogin})
 
         <Form.Group className="mb-3" controlId="formBasicPassword">
             <Form.Label>Password</Form.Label>
-            <Form.Control type="password"/>
+            <Form.Control onChange={(e) => setPassword(e.target.value)} type="password"/>
         </Form.Group>
         <Form.Group className="mb-3" controlId="formBasicCheckbox">
             <Form.Check type="checkbox" label="Check me out" />
         </Form.Group>
         <Button className='mb-3 width100' variant="primary" type="submit">
-            Submit
+            Login
             </Button>
             <GoogleLogin onSuccess={handleSuccess} onError={handleError}/>
         <Link className='text-center d-block mt-3' to="/auth/signup">Do not have any account? Create an account</Link>

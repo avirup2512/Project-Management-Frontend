@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBoard, setBoardList } from '../dashboard/board/BoardSlice';
 import { Button } from 'react-bootstrap';
+import { setProject } from '../dashboard/project/ProjectSlice';
 function ListComponent({ item, properties, users, loggedInUser, type }) {
   const boardSelector = useSelector((state) =>  state.board);
   const dispatch = useDispatch();
@@ -16,8 +17,18 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
   }
   const edit = function ()
   {
-    let obj = {...item,edit:true};
-    dispatch(setBoard(obj));
+    let obj = { ...item, edit: true };
+    switch (type) {
+      case "project":
+        dispatch(setProject(obj));
+        break;
+        case "board":
+        dispatch(setBoard(obj));
+        break;
+      default:
+        break;
+    }
+    
     properties.edit();
   }
   const deleteAction = function ()

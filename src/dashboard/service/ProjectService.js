@@ -88,6 +88,18 @@ let ProjectService = (function ()
         });
         return res.json();
     }
+    ProjectService.prototype.searchUser = async function (keyword)
+    {
+        const res = await fetch(baseUrl+'auth/search',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify({keyword}),
+        });
+        return res.json();
+    }
 
     return ProjectService;
 })()

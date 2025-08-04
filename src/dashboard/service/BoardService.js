@@ -41,15 +41,15 @@ let BoardService = (function ()
         });
         return res.json();
     }
-    BoardService.prototype.searchUser = async function (keyword)
+    BoardService.prototype.searchUser = async function (keyword,projectId)
     {
-        const res = await fetch(baseUrl+'auth/search',{
+        const res = await fetch(baseUrl+'auth/searchByProjectId',{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'authorization':"Bearer "+ localStorage.getItem("token")
         },
-        body: JSON.stringify({keyword}),
+        body: JSON.stringify({keyword,projectId}),
         });
         return res.json();
     }

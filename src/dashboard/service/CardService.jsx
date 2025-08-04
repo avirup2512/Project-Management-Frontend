@@ -43,6 +43,8 @@ let CardService = (function ()
     }
     CardService.prototype.editCard = async function (params)
     {
+        console.log(params);
+        
         const res = await fetch(baseUrl+'card/edit',{
         method: 'PUT',
         headers: {
@@ -186,6 +188,18 @@ let CardService = (function ()
     CardService.prototype.copyCard = async function (params)
     {
         const res = await fetch(baseUrl+'card/copyCard',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    CardService.prototype.getCardActivity = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/cardActivity',{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -29,7 +29,6 @@ export default function Footer() {
     dispatch(setPaginateHappen(!paginateHappen));
   }
   const chnagePagePerItem = (e) => {
-    console.log(e.target.value);
     switch (page) {
       case "project":
           dispatch(setProjectPaginationObject({...projectPaginationObject, currentOffset:0, itemPerPage:e.target.value}))
