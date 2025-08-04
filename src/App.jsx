@@ -1,13 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import Login from './auth/login/Login'
-import Dashboard from './dashboard/Dashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import AuthGuard from './guard/AuthGuard';
-import Auth from './auth/Auth';
 import AppRoutes from './AppRoute';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import AlertComponent from './shared/Alert';
