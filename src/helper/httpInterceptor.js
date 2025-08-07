@@ -13,9 +13,7 @@ export const setGlobalDispatchPayload = (dispatchPayload) => {
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
     console.log("Started");
-    try {
-        console.log(globalDispatch);
-        
+    try {        
         if (globalDispatch) {
             globalDispatch(true);
         }
@@ -27,8 +25,8 @@ window.fetch = async (...args) => {
         return response;
     } catch (error) {
             if (globalDispatch) {
-            //globalDispatch(setShowLoader(false));
-        }
+                globalDispatch(false);
+            }
         console.error('Fetch error:', resource, error);
         throw error;
     }
