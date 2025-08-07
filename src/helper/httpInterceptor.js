@@ -27,7 +27,7 @@ window.fetch = async (...args) => {
             if (globalDispatch) {
                 globalDispatch(false);
             }
-        console.error('Fetch error:', resource, error);
+        console.error('Fetch error:', error);
         throw error;
     }
 }
