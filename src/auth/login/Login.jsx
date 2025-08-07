@@ -8,7 +8,7 @@ import AuthService from "../service/AuthService";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../AuthSlice";
 import { useState } from "react";
-
+import { motion } from "framer-motion";
 function Login({messageSenderLogin})
 {
     const [email, setEmail] = useState('');
@@ -61,28 +61,33 @@ function Login({messageSenderLogin})
         
     }
     return (
-        <Form onSubmit={login}>
-        <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>Email address</Form.Label>
-            <Form.Control onChange={(e) => setEmail(e.target.value)} type="email" />
-            {/* <Form.Text className="text-muted">
-            We'll never share your email with anyone else.
-            </Form.Text> */}
-        </Form.Group>
+        <motion.div className="box"
+        initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}>
+            <div className="text-center">
+                <h3>Sign in</h3>
+            </div>
+            <Form onSubmit={login}>
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Email address</Form.Label>
+                    <Form.Control className="custom-form" required onChange={(e) => setEmail(e.target.value)} type="email" />
+                    {/* <Form.Text className="text-muted">
+                    We'll never share your email with anyone else.
+                    </Form.Text> */}
+                </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Label>Password</Form.Label>
-            <Form.Control onChange={(e) => setPassword(e.target.value)} type="password"/>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formBasicCheckbox">
-            <Form.Check type="checkbox" label="Check me out" />
-        </Form.Group>
-        <Button className='mb-3 width100' variant="primary" type="submit">
-            Login
-            </Button>
-            <GoogleLogin onSuccess={handleSuccess} onError={handleError}/>
-        <Link className='text-center d-block mt-3' to="/auth/signup">Do not have any account? Create an account</Link>
-        </Form>
+                <Form.Group className="mb-3" controlId="formBasicPassword">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control className="custom-form" required onChange={(e) => setPassword(e.target.value)} type="password"/>
+                </Form.Group>
+                <Button className='mb-3 width100 button-primary' variant="primary" type="submit">
+                    Login
+                    </Button>
+                    <GoogleLogin onSuccess={handleSuccess} onError={handleError}/>
+                <Link className='text-center d-block mt-3' to="/auth/signup">Do not have any account? Create an account</Link>
+            </Form>
+        </motion.div>
     )
 }
 

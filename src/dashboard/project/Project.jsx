@@ -11,6 +11,7 @@ import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles, setPage, setPaginateHappen, setProjectPaginationObject } from "../DashboardSlice";
 import ProjectService from "../service/ProjectService";
 import BoardService from "../service/BoardService";
+import { setShowLoader } from "../../AppSlice";
 
 function Project()
 {
@@ -122,11 +123,13 @@ function Project()
                         user.push({user_id:e.id,role:e.role_id})
                     })
                 }
+                dispatch(setShowLoader(true))
                 const project = await projectService.createProject({ name: projectSelector.project.name, isPublic: projectSelector.project.isPublic ? 1 : 0, users: user});
                 if (project.status && project.status == 200)
                 {
                     setModalShow(false);
                     getAllProject();
+                    dispatch(setShowLoader(false))
                 }
             } else {
                 console.log(projectSelector.project);
@@ -260,7 +263,7 @@ function Project()
                 <h3 className="float-start">
                 Project
                 </h3>
-                <button className="btn btn-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Project</button>
+                <button className="btn btn-primary button-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Project</button>
             </div>
             <div className="clearfix"></div>
             <hr></hr>

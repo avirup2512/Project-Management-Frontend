@@ -1,20 +1,21 @@
 .list{
     padding: 7px;
     border-radius: 3px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     cursor: pointer;
     display: flex;
-    gap: 16px;
+    gap: 0;
     align-items: center;
     background: #ffffff;
-    justify-content: space-between;
+    /* justify-content: space-between; */
+    min-height: 50px;
 }
 .list .icon{
     display: flex;
-    /* margin-left :auto; */
+    gap:10px
 }
-.list .icon i{
-    padding: 5px;
+.list .icon svg{
+    /* padding: 5px; */
     align-items: center;
 }
 .list .icon .red{
@@ -28,19 +29,29 @@
 }
 .list .users {
     display: flex;
-    gap: 6px;
+    gap: 0px;
     flex-wrap: wrap;
-    min-width: 150px;
+    /* min-width: 150px; */
 }
 .list .users .user {
     display: inline-block;
     background: #2196F3;
     min-width: 30px;
     text-transform: uppercase;
-    margin: 2px;
+    margin: 0px;
     color: #fff;
     padding-left: 0;
     border-radius: 100%;
     min-height: 30px;
     text-align: center;
+}
+.list .listItems:first-child {
+    width: 5%
+}
+.list .listItems {
+    width:16%
+}
+.list .cardStatus{
+    height: 10px;
+    width: 80%;
 }

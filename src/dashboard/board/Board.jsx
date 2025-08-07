@@ -244,14 +244,14 @@ function Board({ paginate }) {
                 <h3 className="float-start">
                     Boards
                 </h3>
-                <Form.Select className="select" onChange={(e) => { navigate("../board/" + e.target.value + "") }}>
+                <Form.Select className="select custom-select" onChange={(e) => { navigate("../board/" + e.target.value + "") }}>
                     {
                         Object.entries(projectList).map(([index, item]) => {
                             return <option value={item.id}> {item.name}</option>
                         })
                     }
                 </Form.Select>
-                <button className="btn btn-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Board</button>
+                <button className="btn btn-primary   button-primary btn-sm float-end" onClick={() => setModalShow(true)}>Add Board</button>
             </div>
             <div className="clearfix"></div>
             <hr></hr>
@@ -261,9 +261,38 @@ function Board({ paginate }) {
                         <p>No Board</p>
                     </> :
                     <>
-                        {Object.entries(boardList).map(([index, item]) => {
-                            return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
-                        })}
+                        <section className="tableHeader d-flex align-center">
+                            <section className="headerItem">
+                                <Form.Group className="" controlId="formBasicCheckbox">
+                                    <Form.Check type="checkbox" />
+                                </Form.Group>
+                            </section>
+                            <section className="headerItem">
+                                Name
+                            </section>
+                            <section className="headerItem">
+                                Assignee
+                            </section>
+                            <section className="headerItem">
+                                Status
+                            </section>
+                            <section className="headerItem">
+                                Card Stautus
+                            </section>
+                            <section className="headerItem">
+                                Created At
+                            </section>
+                            <section className="headerItem">
+                                Action
+                            </section>
+
+                        </section>
+                        <section className=" height-100 padding-bottom-50-percent">
+                            {Object.entries(boardList).map(([index, item]) => {
+                                return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                            })}
+
+                        </section>
                     </>
             }
             {showAddModal && (

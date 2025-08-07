@@ -18,7 +18,7 @@ function Auth({messageSenderAuth})
             <div className='col-md-4'>
                 &nbsp;
             </div>
-            <div className='col-md-4 box mt-5'>
+            <div className='col-md-4 mt-2'>
                 <Routes>
                     <Route path="/" element={<Navigate to="login"/>}></Route>
                     <Route path="login" element={<Login messageSenderLogin={messageSender} />}></Route>

@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AppRoutes from './AppRoute';
@@ -9,6 +9,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 function App() {
   const [isAlertShow, setAlertShow] = useState(false);
   const [alertObject, setAlertObject] = useState({ message: "", alertType: "primary" });
+  const [loading, setLoading] = useState(true);
   const messageSender = function (message)
   {
     let alertType = message.status === 200 ? "success" :"danger"

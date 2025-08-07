@@ -364,7 +364,7 @@ function CardDetails({closeCall})
     }
     return (
         <>
-            <Container className="cardDetails">
+            <Container fluid className="cardDetails">
                 <div className="justify-content-flex-start">
                     <Row>
                         <div className="col-md-8">

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Board from "./board/Board";
 import Sidebar from "./sidebar/Sidebar";
 import Topmenu from "./topMenu/Topmenu";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DashboardMessageContext } from "./DashboardMessageContext";
 import UserProfile from "./userProfile/UserProfile";
 import ListContainer from "./list/ListContainer";
@@ -17,6 +17,10 @@ import { useDispatch } from "react-redux";
 import Footer from "./footer/Footer";
 import { useSelector } from "react-redux";
 import { setProjectPaginationObject } from "./DashboardSlice";
+import "../helper/httpInterceptor";
+import { setGlobalDispatch,setGlobalDispatchPayload } from '../helper/httpInterceptor';
+import Loader from "../shared/Loader";
+
 function Dashboard({messageSenderDashboard})
 {
     const dispatch = useDispatch();
@@ -30,8 +34,14 @@ function Dashboard({messageSenderDashboard})
     const projectService = new ProjectService();
 
     const paginationObject = useSelector((e) => e.dashboard.projectPaginationObject);
-
+    // const hasMounted = useRef(false);
+    
     useEffect(() => {
+        // if (!hasMounted.current) {
+        //     hasMounted.current = true; // ✅ skip first run
+        //     return;
+        // }
+        setGlobalDispatch(setLoadingFn);
         getAllProject();
         const getUser = async () => {
             let token = localStorage.getItem("token");
@@ -79,29 +89,37 @@ function Dashboard({messageSenderDashboard})
         const walk = (x - startX) * 1.5; // scroll speed
         target.scrollLeft = scrollLeft - walk;
     }
-    if (loading)
-    return "...Loading"
+    const setLoadingFn = () => {
+        setLoading(false)
+    }
+
     return (
             <DashboardMessageContext.Provider value={{ message, setMessage}}>
-            <Topmenu />
-                <UserContext.Provider value={{ loggedInUser, setLoggedInUser }}>
-                    <div className="d-flex">
-                    <Sidebar />
-                        <div onMouseDown={mousedown} onMouseLeave={() => { setIsDown(false) }} onMouseUp={() => { setIsDown(false) }}
-                        onMouseMove={mousemove} className="p-4 pb-5 w-100 overflow-auto dashboard">
-                            {/* <h2>Welcome to the main content area</h2>
-                            <p>This is your dashboard or whatever you want here.</p> */}
-                            <Routes>
-                            <Route path="/" element={<Navigate to="project" />}></Route>
-                            <Route path="project" element={<Project />}></Route>
-                            <Route path="board/:projectId" element={<Board />}></Route>
-                            <Route path="user" element={<UserProfile></UserProfile>}></Route>
-                            <Route path="list/:boardId" element={<ListContainer />}></Route>
-                            <Route path="list/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
-                            </Routes>
+            <UserContext.Provider value={{ loggedInUser, setLoggedInUser }}>
+                {
+                    loading && <Loader/>
+                }
+                {
+                    !loading && 
+                    <>
+                        <Topmenu />
+                        <div className="d-flex">
+                            <Sidebar />
+                            <div onMouseDown={mousedown} onMouseLeave={() => { setIsDown(false) }} onMouseUp={() => { setIsDown(false) }}
+                            onMouseMove={mousemove} className="p-4 pb-5 w-100 overflow-scroll dashboard">
+                                <Routes>
+                                    <Route path="/" element={<Navigate to="project" />}></Route>
+                                    <Route path="project" element={<Project />}></Route>
+                                    <Route path="board/:projectId" element={<Board />}></Route>
+                                    <Route path="user" element={<UserProfile></UserProfile>}></Route>
+                                    <Route path="list/:boardId" element={<ListContainer />}></Route>
+                                    <Route path="list/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
+                                </Routes>
+                            </div>
                         </div>
-                    <Footer ></Footer>
-                </div>
+                        <Footer ></Footer>
+                    </>
+                    }
                 
             </UserContext.Provider>
             </DashboardMessageContext.Provider>

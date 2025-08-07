@@ -1,9 +1,14 @@
 import { useEffect } from "react"
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import Loader from "./shared/Loader";
 
 
 function AppLayout({ children }) {
     const location = useLocation();
+    const showLoader = useSelector((e) => e.app.showLoader);
+    useEffect(() => {
+    },[showLoader])
     useEffect(() => {
         //Remove all previous custom classes from body tag
         document.body.classList = "";
@@ -18,6 +23,8 @@ function AppLayout({ children }) {
         }
             
     })
+    if (showLoader)
+    return <Loader/>
     return <>{children}</>;
 }
 
