@@ -17,7 +17,7 @@ window.fetch = async (...args) => {
         if (globalDispatch) {
             globalDispatch(true);
         }
-        const response = await originalFetch(...args);
+        const response = await originalFetch(args[0],args[1]);
         console.log("Ended");
         if (globalDispatch) {
             globalDispatch(false);
