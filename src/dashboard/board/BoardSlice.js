@@ -11,9 +11,7 @@ export const BoardSlice = createSlice({
         setBoardList: (state,action) => {
             state.boardList = action.payload;
         },
-        setBoard: (state, action) => {
-            console.log(action);
-            
+        setBoard: (state, action) => {            
             state.board = action.payload;
         }
     }

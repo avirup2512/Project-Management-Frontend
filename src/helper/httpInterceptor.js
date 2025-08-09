@@ -12,13 +12,11 @@ export const setGlobalDispatchPayload = (dispatchPayload) => {
 
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
-    console.log("Started");
     try {        
         if (globalDispatch) {
             globalDispatch(true);
         }
         const response = await originalFetch(args[0],args[1]);
-        console.log("Ended");
         if (globalDispatch) {
             globalDispatch(false);
         }

@@ -18,11 +18,8 @@ function Login({messageSenderLogin})
     const authService = new AuthService('');
     const navigate = useNavigate();
     const handleSuccess = (credentialResponse) => {
-        console.log(credentialResponse);
-        
         //jwtDecode
         const decoded = jwtDecode(credentialResponse.credential);
-        console.log(decoded);
         const param = {};
         param.email = decoded.email;
         param.uniqueIdentifier = decoded.sub;

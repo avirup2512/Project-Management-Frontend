@@ -57,8 +57,8 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
           </div>
           <div className='owner listItems'>
           {/* {loggedInUser.id == item.board_user_id && <i className="bi bi-person-circle primary"></i>} */}
-                                                              <ProgressBar className='cardStatus' now={34} />
-
+          <ProgressBar className='cardStatus' now={(item.totalCompleteCard/item.totalCard)*100} />
+          <span>{ item.totalCompleteCard}/{ item.totalCard}</span>
           </div>
           <div className='listItems'>
               <i className="bi bi-plus-circle primary"></i>

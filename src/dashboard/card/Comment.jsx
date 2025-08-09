@@ -17,7 +17,6 @@ function Comment({i})
     const { cardId } = useParams();
     const { listId } = useParams();
     useEffect(() => {
-        console.log(i);
         if (i)
         {
             setItem(i);
@@ -34,7 +33,6 @@ function Comment({i})
         setShowModal(true);
     }
     const editCommentCall = (e) => {
-        console.log(e);
         const comment = stateToHTML(e.getCurrentContent());
         const params = { cardId, boardId, listId, id: i?.id, comment };
         const editedComment = cardService.editComment(params);

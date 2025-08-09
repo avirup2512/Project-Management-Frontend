@@ -35,7 +35,7 @@ function Card({item,listId,copyCardProps,onClick})
         if (card.status && card.status == 200)
         {
             let list = JSON.parse(JSON.stringify(allList))
-            let index = list.findIndex(l => l.id === listId);
+            let index = list.findIndex(l => l.id === listId);            
             const cardIndex = list[index].cards.findIndex(elem => elem.id == item.id);
             let cardObject = JSON.parse(JSON.stringify(list[index].cards[cardIndex]));
             cardObject.complete = !e.target.checked;
@@ -48,7 +48,6 @@ function Card({item,listId,copyCardProps,onClick})
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"tag", message: "Are you sure want to delete Card?" }))
     }
     const copyCard = async () => {
-        console.log("HI");
         copyCardProps();
         // const copiedCard = await cardService.copyCard({boardId,listId,cardId:item.id, listIds:[58,56]});
     }
@@ -60,7 +59,6 @@ function Card({item,listId,copyCardProps,onClick})
             let list = JSON.parse(JSON.stringify(allList))
             let index = list.findIndex(l => l.id === listId);
             list[index].cards = list[index].cards.filter((e) => { return e.id != item?.id });
-            console.log(list[index].cards);
             dispatch(setAllList(list))
             setMenuShow(false);
         }

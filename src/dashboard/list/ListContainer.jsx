@@ -1,6 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ListItem from "./listItem/ListItem";
-import { Button } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import "./List.css"
 import ListService from "../service/ListService";
@@ -24,7 +24,10 @@ function ListContainer({ onTrigger }) {
     const [lastPosition, setLastPosition] = useState(0);
     const [showListModal, setShowListModal] = useState(false)
     const [listForMultiSelect, setListForMultiSelect] = useState([]);
+    const [activeList, setActiveList] = useState([]);
+    const [archivedList, setArchivedList] = useState([]);
     const [copyCardData, setCopyCardData] = useState({});
+    const [activeTabKey, setActiveTabKey] = useState("activeList");
     const [filterItems, setFilterItems] = useState([
         { value: "completeCard", label: "Show Complete Card" },
         { value: "pendingCard", label: "Show Pending Card" },
@@ -44,20 +47,27 @@ function ListContainer({ onTrigger }) {
         cards:[]
     })
     useEffect(() => {      
-        console.log(allList);
         getList();
     }, []);
     useEffect(() => {  
-    const listCopy = JSON.parse(JSON.stringify(allList));
-    if(listCopy && listCopy.length > 0)
-    {
-        listCopy.forEach((e) => {
-            console.log(e);
-            
-            e.label = e.name;
-            e.value = e.id
-        });
+        const listCopy = JSON.parse(JSON.stringify(allList));
+        const activeList = [];
+        const archivedList = [];
+        if(listCopy && listCopy.length > 0)
+        {
+            listCopy.forEach((e) => {            
+                e.label = e.name;
+                e.value = e.id
+                if (!e.is_archived)
+                {
+                    activeList.push(e);
+                } else {
+                    archivedList.push(e);
+                }
+            });
         }
+        setActiveList(activeList);
+        setArchivedList(archivedList);
         setListForMultiSelect(listCopy);
     },[allList])
     const getList = async () => {
@@ -65,9 +75,13 @@ function ListContainer({ onTrigger }) {
         if (list.status && list.status == 200)
         {
             const result = Object.entries(list.data).map(([_, value]) => value);
+            
             result.sort((a, b) => {
                 return a.position > b.position ? 1 : -1
             });
+            result.forEach((e,i) => {
+                result[i] = modifyListData(e);
+            })
             dispatch(setAllList(result))
             // setListItem(result);
             if (result.length > 0)
@@ -142,9 +156,7 @@ function ListContainer({ onTrigger }) {
         gap:"20px"
     });
     const copyCard = async function (e) {
-        console.log(e);
         const listIds = e.selectedItem.length > 0 ? e.selectedItem.map((e) => { return e.id }) : [];
-        console.log(listIds);
         
         const copiedCard = await cardService.copyCard({ boardId, listId: e.listId, cardId: e.cardId, listIds });
         if (copiedCard.status && copiedCard.status == 200)
@@ -153,13 +165,34 @@ function ListContainer({ onTrigger }) {
         }
     }
     const openListModal = function (e) {
-        console.log(e);
         
         setCopyCardData(e);
         setShowListModal(true)
     }
     const filterList = async () => {
         
+    }
+    const modifyListData = (e) => {
+        const item = JSON.parse(JSON.stringify(e));
+        if (item.hasOwnProperty("cards"))
+        {
+            let cardArray = Object.entries(item?.cards).map((e) => {
+            let users = Object.entries(e[1].users).map((u) => {
+                return u[1];
+            })
+            e[1].users = users;
+            let tags = Object.entries(e[1].tags).map((u) => {
+                return u[1];
+            })
+            e[1].tags = tags;
+            return e[1];
+            });
+            item.cards = cardArray;
+        } else {
+            item.cards = [];
+        }
+        
+        return item;
     }
     return (
         <>
@@ -169,32 +202,67 @@ function ListContainer({ onTrigger }) {
                 </div> */}
                 <>
                     <Filter item={filterItems} filter={filterList} />
-                    <div className="listContainer d-flex">
-                        <DragDropContext onDragEnd={changePosition}>
-                        <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
-                            {(provided, snapshot) => (
-                                <div ref={provided.innerRef}
-                                style={getListStyle(snapshot.isDraggingOver)}
-                                {...provided.droppableProps}>
-                                    {allList.map((e, i) => (
-                                        <Draggable
-                                        key={i}
-                                        draggableId={('index'+i).toString()}
-                                        index={i}>
-                                            {(draggableProvided, snapshot) => (
-                                                <div ref={draggableProvided.innerRef}
-                                                
-                                                    {...draggableProvided.draggableProps}>
-                                                    <ListItem copyCard={(e)=> openListModal(e) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
-                                                </div>
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                        <ListItem className="margin-left-auto" properties={listProperty} addList={true} />
-                                </div>
-                            )}
-                        </Droppable>
-                        </DragDropContext>
+                    <div className="listContainer">
+                        <Tabs
+                            id="list-container-tab"
+                            activeKey={activeTabKey}
+                            onSelect={(k) => setActiveTabKey(k)}
+                        >
+                            <Tab eventKey="activeList" title="Active List">
+                                <DragDropContext onDragEnd={changePosition}>
+                                    <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
+                                        {(provided, snapshot) => (
+                                            <div ref={provided.innerRef}
+                                            style={getListStyle(snapshot.isDraggingOver)}
+                                            {...provided.droppableProps}>
+                                                {activeList.map((e, i) => (
+                                                    <Draggable
+                                                    key={i}
+                                                    draggableId={('index'+i).toString()}
+                                                    index={i}>
+                                                        {(draggableProvided, snapshot) => (
+                                                            <div ref={draggableProvided.innerRef}
+                                                            
+                                                                {...draggableProvided.draggableProps}>
+                                                                <ListItem copyCard={(e)=> openListModal(e) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                    <ListItem className="margin-left-auto" properties={listProperty} addList={true} />
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </Tab>
+                            <Tab eventKey="archivedList" title="Archived List">
+                                <DragDropContext onDragEnd={changePosition}>
+                                    <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
+                                        {(provided, snapshot) => (
+                                            <div ref={provided.innerRef}
+                                            style={getListStyle(snapshot.isDraggingOver)}
+                                            {...provided.droppableProps}>
+                                                {archivedList.map((e, i) => (
+                                                    <Draggable
+                                                    key={i}
+                                                    draggableId={('index'+i).toString()}
+                                                    index={i}>
+                                                        {(draggableProvided, snapshot) => (
+                                                            <div ref={draggableProvided.innerRef}
+                                                            
+                                                                {...draggableProvided.draggableProps}>
+                                                                <ListItem copyCard={(e)=> openListModal(e) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </Tab>
+                        </Tabs>
+                        
                         {
                             showListModal && <MultiSelectSearch copyCardData={copyCardData} properties={multiSearchProperties} item={listForMultiSelect} />
                         }

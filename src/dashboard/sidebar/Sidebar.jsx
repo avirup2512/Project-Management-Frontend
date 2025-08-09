@@ -15,9 +15,7 @@ export default function Sidebar() {
     navigate("/dashboard/user"); 
   }
   const navigateBoard = function (e)
-  {
-    console.log(defaultProject);
-    
+  {    
     e.preventDefault();
     navigate("/dashboard/board/"+defaultProject?.id);
   }

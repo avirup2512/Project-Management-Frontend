@@ -27,7 +27,6 @@ function CreateUser()
     const handleSuccess = (credentialResponse) => {
         // jwtDecode
     const decoded = jwtDecode(credentialResponse.credential);
-        console.log('User Info:', decoded);
         const param = {};
         param.firstName = decoded.given_name;
         param.lastName = decoded.family_name;

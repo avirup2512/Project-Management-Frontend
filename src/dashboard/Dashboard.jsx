@@ -56,7 +56,6 @@ function Dashboard({messageSenderDashboard})
         {
             const { itemPerPage } = paginationObject;
             const items = { items: Math.ceil(project?.totalCount / itemPerPage), totalCount: project?.totalCount };
-            console.log({...paginationObject,...items});
             dispatch(setProjectPaginationObject({...paginationObject,...items}))
             dispatch(setProjectList(project.data));
             setLoading(false)

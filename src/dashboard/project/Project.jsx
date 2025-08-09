@@ -76,23 +76,17 @@ function Project()
             hasMounted.current = true; // ✅ skip first run
             return;
         }
-        console.log(paginationObject);
         
         getAllProject();
         getRoles();
     }, [paginateHappen]);
     const getAllProject = async function ()
-    {
-        console.log("HELLO");
-        
-        console.log(paginationObject);
-        
+    {        
         const project = await projectService.getAllProject(localStorage.getItem("token"),paginationObject.itemPerPage, paginationObject.currentOffset);        
         if(project.status && project.status == 200)
         {
             const { itemPerPage } = paginationObject;
             const items = { items: Math.ceil(project?.totalCount / itemPerPage), totalCount: project?.totalCount };
-            console.log({...paginationObject,...items});
             dispatch(setProjectPaginationObject({...paginationObject,...items}))
             dispatch(setProjectList(project.data));
             setEmpty(false)
@@ -111,7 +105,6 @@ function Project()
     const addProject = async function ()
     {        
         let user = [];
-        console.log(projectSelector);
         
         if (projectSelector.project.name) {
             if (!projectSelector.project.id)
@@ -131,9 +124,7 @@ function Project()
                     getAllProject();
                     dispatch(setShowLoader(false))
                 }
-            } else {
-                console.log(projectSelector.project);
-                
+            } else {                
                 if (projectSelector.project.user && projectSelector.project.user.length > 0)
                 {
                     projectSelector.project.user.forEach((e) => {                            
@@ -170,15 +161,11 @@ function Project()
     }
     const editProject = async function ()
     {
-        console.log(projectSelector.project);
-        
         setModalShow(true);
         // setSelectedBoards((p)=>({...p,}))
         // setSerachProperties((prevItem) => ({ ...prevItem, selectedUser: item.user }));
     }
-    const fetchUsers = async (params) => {
-        console.log(params);
-        
+    const fetchUsers = async (params) => {        
         const user = await projectService.searchUser(params);
         if (user.status && user.status == 200)
         {
@@ -213,9 +200,7 @@ function Project()
         // } else {
         //     selectedUser = property.selectedUser.filter((e) => (e.id != property.result[i].id));
         //     selectedUserMap.delete(property.result[i].id);
-        // }       
-        // console.log(property);
-        
+        // }               
         // setSerachProperties((prevItem) => ({ ...prevItem, property }));
     }
     const onUserRemoved = function (id,property)
@@ -231,9 +216,7 @@ function Project()
     }
     const onRoleUpdate = function (role,property,id)
     {
-        property.selectedUser.forEach((e) => {
-            console.log(e);
-            
+        property.selectedUser.forEach((e) => {            
             if (e.id == id)
                 e.role_id = role;
         })
@@ -252,9 +235,7 @@ function Project()
         }
     }
     const openProject = function (id)
-    {
-        console.log(id);
-        
+    {        
         navigate("../board/"+id)
     }
     return (

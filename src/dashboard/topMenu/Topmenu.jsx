@@ -9,9 +9,7 @@ import { UserContext } from "../UserContext";
 
 export default function Topmenu() {
   const { loggedInUser } = useContext(UserContext);
-  useEffect(() => {
-    console.log(loggedInUser);
-    
+  useEffect(() => {    
   },[])
   
   const navigate = useNavigate();
@@ -28,8 +26,6 @@ export default function Topmenu() {
   }
   const search = async (e) => {
     e.preventDefault()
-    console.log(loggedInUser);
-    
   }
   return (
     <Navbar bg="light" expand="lg">

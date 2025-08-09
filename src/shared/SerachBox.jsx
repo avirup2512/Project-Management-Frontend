@@ -20,17 +20,13 @@ function SearchBox({ properties, type, addAllProjectMember }) {
         };
         return map;
     })
-    useEffect(() => {        
-        console.log(boardSelector);
-        
+    useEffect(() => {                
         setSelectedUser(boardSelector.board.user);
     }, [boardSelector])
     useEffect(() => {
         setAllUser(allUserList)
-        console.log(allUserList);
     }, [allUserList])
     useEffect(() => {
-        console.log(allRoles);
     }, [allRoles])
     
     const [isOpen, toggleShow] = useState(false);

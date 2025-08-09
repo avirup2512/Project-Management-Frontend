@@ -89,6 +89,18 @@ let ListService = (function ()
         });
         return res.json();
     }
+    ListService.prototype.archiveList = async function (params)
+    {
+        const res = await fetch(baseUrl+'list/archived',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
     return ListService;
 })()
 

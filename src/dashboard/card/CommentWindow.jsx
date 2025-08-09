@@ -16,7 +16,6 @@ function CommentWindow({i,showModal,close, editComment})
     const { boardId } = useParams();
     const { cardId } = useParams();
     useEffect(() => {
-        console.log(i);
         if (i)
         {
             setItem(i);

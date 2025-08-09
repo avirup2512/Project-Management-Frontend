@@ -11,9 +11,7 @@ function AuthGuard({children})
     useEffect(() => {
         const verifyToken = async () => {            
             try {
-                const user = await isAuthenticated();
-                console.log(user);
-                
+                const user = await isAuthenticated();                
                 dispatch(setUser(user.data));
                 let isVerify = (user && user.status && user.status == 200) ? true : false;
                 if (isVerify)

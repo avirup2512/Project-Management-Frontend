@@ -7,12 +7,8 @@ let DateService = (function ()
         
     }
     DateService.prototype.FromUTCToLocal = function (utcString)
-    {
-        console.log(utcString);
-        
-        const utcDate = new Date(utcString);
-        console.log(utcDate);
-        
+    {        
+        const utcDate = new Date(utcString);        
         const year = utcDate.getFullYear();
         const month = String(utcDate.getMonth() + 1).padStart(2, '0');
         const day = String(utcDate.getDate()).padStart(2, '0');

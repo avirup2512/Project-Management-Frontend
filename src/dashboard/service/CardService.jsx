@@ -42,9 +42,7 @@ let CardService = (function ()
         return res.json();
     }
     CardService.prototype.editCard = async function (params)
-    {
-        console.log(params);
-        
+    {        
         const res = await fetch(baseUrl+'card/edit',{
         method: 'PUT',
         headers: {

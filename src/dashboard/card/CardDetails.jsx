@@ -35,7 +35,6 @@ function CardDetails({closeCall})
     const [reminderDate, setReminderDate] = useState(null);
     const [dueDate, setDueDate] = useState(null);
     useEffect(() => {
-        console.log(currentCard);
         if (!currentCard || Object.keys(currentCard).length == 0)
         {
             getCurrentCard();
@@ -84,15 +83,12 @@ function CardDetails({closeCall})
     const boardService = new BoardService();
     const currentTagIdRef = useRef(null);
     const currentCheckListId = useRef(null);
-    const getCardActivity = async () => {
-        console.log(currentCard);
-        
+    const getCardActivity = async () => {        
         const activities = await cardService.getCardActivity({ boardId, listId, cardId: currentCard.id });
         if (activities.status && activities.status == 200)
         {
             setActivities(activities.data)
         }
-        console.log(activities);
     }
     const getRoles = async () => {
         const roles = await boardService.getAllRoles();
@@ -101,14 +97,11 @@ function CardDetails({closeCall})
         }
     }
     const getCurrentCard = async () => {
-        const card = await cardService.getCardById(boardId, cardId);
-        console.log(card);
-        
+        const card = await cardService.getCardById(boardId, cardId);        
         if (card.status && card.status == 200)
         {
             // dispatch(setCurrentCard(card.data[Object.keys(card.data)[0]]));
             dispatch(setCurrCard(card.data[Object.keys(card.data)[0]]));
-            console.log(dateService.FromUTCToLocal(card.data[Object.keys(card.data)[0]]?.reminder_date));
             if(card.data[Object.keys(card.data)[0]].reminder_date)
                 setReminderDate(new Date(dateService.FromUTCToLocal(card.data[Object.keys(card.data)[0]]?.reminder_date)));
             if (card.data[Object.keys(card.data)[0]].due_date)
@@ -167,15 +160,11 @@ function CardDetails({closeCall})
 
         }
     }
-    const completeCard = async (evt) => {
-        console.log(evt.target.checked);
-        
+    const completeCard = async (evt) => {        
         const card = await cardService.setStatus({ boardId, listId, cardId: currentCard.id, isComplete: evt.target.checked });
         if (card.status && card.status == 200)
         {
-            let curCard = { ...currentCard };
-            console.log(curCard);
-            
+            let curCard = { ...currentCard };            
             curCard.complete = !evt.target.checked;
             dispatch(setCurrCard(curCard));
             let list = JSON.parse(JSON.stringify(allList));
@@ -203,7 +192,6 @@ function CardDetails({closeCall})
     }
     const fetchTags = async (key) => {   
         let params = {key,boardId}
-        console.log(params);
         params.boardId = boardId;
         const tags = await cardService.getTagBySearchKey(params);
         if (tags.status && tags.status == 200)
@@ -224,9 +212,7 @@ function CardDetails({closeCall})
             dispatch(setUserList([]));
         }
     }
-    const searchTags = (_,value) => {
-        console.log(value);
-        
+    const searchTags = (_,value) => {        
         if (value.length >= 2) {
             debouncedFetchedTags(value);
         } else if (value.length == 0)
@@ -241,14 +227,12 @@ function CardDetails({closeCall})
         users.push({...user,id:user.id});
         currentCardCopy.users = users;
         // currentCard = ;
-        console.log(currentCardCopy.users);
         dispatch(setCurrCard(currentCardCopy));
     }
     const userRemove = (id) => {
         // const index = currentCard.users.filter((e) => e.id != id);
         const obj = JSON.parse(JSON.stringify(currentCard));
         obj.users = obj.users.filter((e)=> (e.id != id))
-        console.log(obj.users);
         dispatch(setCurrCard(obj));
     }
     const roleChange = function (id, role)
@@ -265,7 +249,6 @@ function CardDetails({closeCall})
     const saveAction = async () => {
         const users = currentCard.users;
         const card = await cardService.addUsers({ cardId, boardId, users });
-        console.log(card);
         if (card.status && card.status == 200)
         {
             setShowModal(false);
@@ -301,7 +284,6 @@ function CardDetails({closeCall})
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"tag", message: "Are you sure want to delete tag?" }))
     }
     const addTag = async (tag) => {
-        console.log(tag);
         let params = { tag, boardId, cardId };
         const addedTag = await cardService.addTag(params);
         if (addedTag .status && addedTag .status == 200)
@@ -311,7 +293,6 @@ function CardDetails({closeCall})
             dispatch(setCurrCard(currTag));
             setShowModal(false);
         }
-        console.log(addedTag);
     }
     const addCheckList = async () => {
         const params = { cardId, boardId, name:"New CheckList",isChecked:0, position:0 }
@@ -332,30 +313,20 @@ function CardDetails({closeCall})
         const params = { cardId, boardId,listId, comment:e };
         const commentAdded = await cardService.addComment(params);
         if (commentAdded.status && commentAdded.status == 200)
-        {
-            console.log(loggedInUser);
-            
+        {            
             let currCard = JSON.parse(JSON.stringify(currentCard));
-            currCard.comments.push({ id: commentAdded.data.insertId, comment: e, user: (loggedInUser.data.first_name + ' ' + loggedInUser.data.last_name), id: loggedInUser.data.id, date: new Date().toISOString() });
-            console.log(currCard);
-            
+            currCard.comments.push({ id: commentAdded.data.insertId, comment: e, user: (loggedInUser.data.first_name + ' ' + loggedInUser.data.last_name), id: loggedInUser.data.id, date: new Date().toISOString() });            
             dispatch(setCurrCard(currCard));
         }
     }
-    const setReminderDateCall = async (date) => {
-        console.log(date);
-        //console.log(new Date(date).toISOString());
-        
+    const setReminderDateCall = async (date) => {        
         const editedCard = await cardService.editCard({reminderDate:""+date+"", boardId, listId, cardId:currentCard?.id});
         if (editedCard.status && editedCard.status == 200)
         {
             setReminderDate(date)
         }
     }
-    const setDueDateCall = async (date) => {
-        console.log(new Date(date));
-        console.log(date);
-        
+    const setDueDateCall = async (date) => { 
         const editedCard = await cardService.editCard({dueDate:date, boardId, listId, cardId:currentCard?.id});
         if (editedCard.status && editedCard.status == 200)
         {

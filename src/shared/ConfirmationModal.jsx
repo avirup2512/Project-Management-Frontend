@@ -3,9 +3,7 @@ import { Button, Modal } from "react-bootstrap";
 function ConfirmationModal({ properties,onConfirm }) {
     const closeModal = function ()
     {
-        properties.close();
-        console.log(properties);
-        
+        properties.close();        
     }
     const action = function (value)
     {

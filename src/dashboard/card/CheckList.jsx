@@ -12,7 +12,6 @@ function CheckList({i,deleteChckList})
     const { boardId } = useParams();
     const { cardId } = useParams();
     useEffect(() => {
-        console.log(i);
         if (i)
         {
             setItem(i);
@@ -26,9 +25,7 @@ function CheckList({i,deleteChckList})
     const [item, setItem] = useState(false);
     const completeCheckList = async (e) => {
         // e.preventDefault();
-        // e.stopPropagation();
-        console.log(e.target.checked);
-        
+        // e.stopPropagation();        
         const item2 = JSON.parse(JSON.stringify(item));
         item2.cliIsChecked = e.target.checked ? 1 : 0;
         setItem(item2);

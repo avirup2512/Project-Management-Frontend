@@ -1,9 +1,7 @@
 import "./Menu.css";
 import { useEffect } from 'react';
 function Menu({properties,show }) {
-  useEffect(() => {
-    console.log(show);
-    
+  useEffect(() => {    
   }, [show])
   return (
       <>

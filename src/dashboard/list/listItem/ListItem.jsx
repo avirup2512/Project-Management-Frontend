@@ -48,9 +48,9 @@ function ListItem({item,addList,properties,copyCard,provided})
     const listService = new ListService();
     const cardService = new CardService();
 
-    useEffect(() => {
-    }, []);
-    useEffect(() => {           
+    useEffect(() => {        
+    }, [properties]);
+    useEffect(() => {             
         if (!addList)
             setListName(item.name);
         if (item && item.cards)
@@ -83,7 +83,7 @@ function ListItem({item,addList,properties,copyCard,provided})
     const archiveList = async function ()
     {
         setMenuShow(false)
-        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"List", message: "Are you sure want to archive the list?" }))
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"List/Archive", message: "Are you sure want to archive the list?" }))
     }
     const addCardFunc = async function (e)
     {        
@@ -94,9 +94,13 @@ function ListItem({item,addList,properties,copyCard,provided})
             const card = await cardService.createCard({ name: cardName, listId: item?.id, boardId: item?.board_id, position:lastPosition });
             if (card.status && card.status == 200) {
                 const index = allList.findIndex(l => l.id === item.id);
+                console.log(allList);
+                
                 const list = [...allList];
-                const listObj = { ...list[index] };
-                console.log(list);
+                const listObj = { ...list[index] };   
+                console.log(listObj);
+                
+                console.log(listObj.cards);
                 
                 const cardArr = [...listObj.cards]
                 cardArr.push({ complete: 0, description: null, id: card.data.insertId, name: cardName });
@@ -127,7 +131,6 @@ function ListItem({item,addList,properties,copyCard,provided})
     }
     const openCard = (event, card) =>
     {
-        // console.log(card);
         dispatch(setCurrentCard(card));
         // setShowModal(true);
         navigate("./"+item.id+"/card/"+card.id)
@@ -136,7 +139,6 @@ function ListItem({item,addList,properties,copyCard,provided})
         properties.completeCard(item.id,cardId,value);
     }
     const onDragEnd = async (evt) => {
-        console.log(evt);
         // If dropped outside any droppable
         const allCardCopy = JSON.parse(JSON.stringify(item?.cards));
         let oldCardItem = {};
@@ -176,13 +178,10 @@ function ListItem({item,addList,properties,copyCard,provided})
             const listToAddedIndex = allList.findIndex(l => l.id == evt.to.parentElement.dataset.listId);
             const listCopy = JSON.parse(JSON.stringify(allList));
             const listFromDeleted = { ...listCopy[listFromDeletedIndex] };
-            console.log(listFromDeleted);
             
             const listToAdded = { ...listCopy[listToAddedIndex] };
-            console.log(listToAdded);
             
             const card = listFromDeleted.cards.find((e) => { return e.id == evt.clone.dataset.cardId });
-            console.log(card);
             const nextAllCardPositionMinus = []
             const cardIndex = listFromDeleted.cards.findIndex(card => card.id == evt.clone.dataset.cardId);
             listFromDeleted.cards.splice(cardIndex, 1);
@@ -200,7 +199,6 @@ function ListItem({item,addList,properties,copyCard,provided})
                     nextAllCardPositionMinus.push(e.id);
                 }
             })
-            console.log(nextAllCardPositionPlus);
             
             listCopy[listFromDeletedIndex] = listFromDeleted
             listCopy[listToAddedIndex] = listToAdded;
@@ -211,7 +209,18 @@ function ListItem({item,addList,properties,copyCard,provided})
     const closeModal = () => {
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }));
     }
-    const onConfirm = async () => {
+    const onConfirm = async (t) => {
+        console.log(t);
+        const type = t.split("/");
+        if (type[0] == "List")
+        {
+            if (type[1] == "Archive")
+            {
+                const archiveList = await listService.archiveList({ boardId, listId: item.id, archived:1 });
+                console.log(archiveList);
+                
+            }
+        }
         // const params = { boardId, listId, cardId: item?.id };
         // const deletedCard = await cardService.deleteCard(params);
         // if (deletedCard.status && deletedCard.status == 200)
@@ -219,7 +228,6 @@ function ListItem({item,addList,properties,copyCard,provided})
         //     let list = JSON.parse(JSON.stringify(allList))
         //     let index = list.findIndex(l => l.id === listId);
         //     list[index].cards = list[index].cards.filter((e) => { return e.id != item?.id });
-        //     console.log(list[index].cards);
         //     dispatch(setAllList(list))
         //     setMenuShow(false);
         // }
@@ -254,9 +262,8 @@ function ListItem({item,addList,properties,copyCard,provided})
                             </div>
                             <hr></hr>
                             <div className="scroll" data-list-id={item?.id}>
-                                <ReactSortable className="mb-2 ss" list={item.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {    
-                                    console.log(newState);
-                                    
+                                
+                                { item.hasOwnProperty("cards") &&  <ReactSortable className="mb-2 ss" list={item?.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {                                        
                                        // onDragEnd(newState)
                                     setCards(newState); 
                                         properties.updateCards(item.id, newState);
@@ -266,7 +273,7 @@ function ListItem({item,addList,properties,copyCard,provided})
                                             <Card onClick={(event)=>openCard(event,e)} item={e} listId={item.id} copyCardProps={(e) => {copyCard({...e,listId:item.id})}} key={e.id}></Card>
                                         ))
                                     }
-                                </ReactSortable>
+                                </ReactSortable>}
                             </div>
                             {
                                 !cardEditMode &&

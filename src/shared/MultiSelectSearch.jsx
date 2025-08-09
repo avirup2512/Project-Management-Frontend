@@ -6,9 +6,7 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select'
 function MultiSelectSearch({ properties, item,copyCardData }) {
     const [selectedItem, setSelectedItem] = useState([]);
-    useEffect((e) => {
-        console.log(e);
-        
+    useEffect((e) => {        
     },[item])
     const closeModal = function ()
     {
@@ -19,12 +17,11 @@ function MultiSelectSearch({ properties, item,copyCardData }) {
         properties.onSubmit({selectedItem,...copyCardData});
     }
     const listSelect = (e) => {
-        console.log(e);
         setSelectedItem(e);
     }
     return (
     <>
-             <div className="modal show d-block" tabIndex="-1">
+            <div className="modal show d-block" tabIndex="-1">
                 <Modal show={true} size={'md'}>
                     <Modal.Header closeButton onClick={() => closeModal()}>
                         <Modal.Title>Select Destination Lists</Modal.Title>

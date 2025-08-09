@@ -78,25 +78,18 @@ function Board({ paginate }) {
         if (!hasMounted.current) {
             hasMounted.current = true; // ✅ skip first run
             return;
-        }
-        console.log("HAI");
-        
+        }        
         getBoard(projectId);
         getRoles();
 
     }, [paginateHappen]);
     const getBoard = async function (projectId) {
-        console.log(projectId);
-
         const board = await boardService.getAllBoards(localStorage.getItem("token"), projectId, paginationObject.itemPerPage, paginationObject.currentOffset);
-        console.log(board);
         if (board.status && board.status == 200) {
 
             dispatch(setBoardList(board.data));
             const { itemPerPage } = paginationObject;
             const items = { items: Math.ceil(board?.totalCount / itemPerPage), totalCount: board?.totalCount };
-            console.log({ ...paginationObject, ...items });
-
             dispatch(setBoardPaginationObject({ ...paginationObject, ...items }))
             setEmpty(false);
         }
@@ -110,9 +103,7 @@ function Board({ paginate }) {
         }
     }
     const addBoard = async function () {
-        let user = [];
-        console.log(boardSelector);
-        
+        let user = [];        
         if (boardSelector.board.name) {
             if (!boardSelector.board.id) {
                 if (boardSelector.board.user && boardSelector.board.user.length > 0) {
@@ -127,8 +118,6 @@ function Board({ paginate }) {
                     getBoard(projectId);
                 }
             } else {
-                console.log(boardSelector.board);
-
                 if (boardSelector.board.user && boardSelector.board.user.length > 0) {
                     boardSelector.board.user.forEach((e) => {
                         if (!e.creator)
@@ -162,8 +151,6 @@ function Board({ paginate }) {
         setModalShow(true);
     }
     const fetchUsers = async (params) => {
-        console.log(params);
-
         const user = await boardService.searchUser(params, projectId);
         if (user.status && user.status == 200) {
             setUser(user.data);
@@ -194,7 +181,6 @@ function Board({ paginate }) {
         //     selectedUser = property.selectedUser.filter((e) => (e.id != property.result[i].id));
         //     selectedUserMap.delete(property.result[i].id);
         // }       
-        // console.log(property);
 
         // setSerachProperties((prevItem) => ({ ...prevItem, property }));
     }
@@ -210,8 +196,6 @@ function Board({ paginate }) {
     }
     const onRoleUpdate = function (role, property, id) {
         property.selectedUser.forEach((e) => {
-            console.log(e);
-
             if (e.id == id)
                 e.role_id = role;
         })

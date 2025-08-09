@@ -32,9 +32,7 @@ function FloatingForm({ saveAction,roleChange,searchedList,selectedList,name,onS
     }
     const itemRemove = function (item)
     {
-        // selectedItemMap.has(item.id);
-        console.log(item);
-        
+        // selectedItemMap.has(item.id);        
         onItemRemove(item.id || item.tagId);
     }
     const closeModal = function ()
