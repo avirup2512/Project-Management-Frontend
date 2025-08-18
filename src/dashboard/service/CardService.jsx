@@ -207,6 +207,17 @@ let CardService = (function ()
         });
         return res.json();
     }
+    CardService.prototype.upload = async function (params)
+    {
+        const res = await fetch(baseUrl+'card/upload',{
+        method: 'POST',
+        headers: {
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: params,
+        });
+        return res.json();
+    }
     return CardService;
 })()
 

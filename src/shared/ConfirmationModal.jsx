@@ -7,11 +7,13 @@ function ConfirmationModal({ properties,onConfirm }) {
     }
     const action = function (value)
     {
-        onConfirm(properties.type);
+        console.log(properties.type);
+        
+        properties.action(properties.type);
         closeModal();
     }
-  return (
-      <>
+return (
+    <>
         {properties.showModal &&
             <div className="modal show d-block" tabIndex="-1">
                 <Modal show={properties.showModal} size="sm">
@@ -30,7 +32,7 @@ function ConfirmationModal({ properties,onConfirm }) {
                 </Modal>
             </div>}
     </>
-  );
+);
 }
 
 export default ConfirmationModal;

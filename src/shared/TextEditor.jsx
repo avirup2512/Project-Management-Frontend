@@ -1,14 +1,15 @@
 import {Editor, EditorState, RichUtils} from 'draft-js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import "./TextEditor.css";
-import { Button } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 import { ContentState } from "draft-js";
 import { stateFromHTML } from 'draft-js-import-html';
 import ReactQuill from 'react-quill-new';
+import { File, FileUpIcon } from 'lucide-react';
 
 function TextEditorComponent(props) {
   const [value, setValue] = useState('');
-
+  const quillRef = useRef()
   useEffect(() => {    
     if (props.hasValue)
     {
@@ -19,118 +20,70 @@ function TextEditorComponent(props) {
   const editorChange = (e) => {   
     setValue(e)
   }
-  const toggleBlockType = (blockType) => {
-    editorChange(
-      RichUtils.toggleBlockType(
-        editorState,
-        blockType
-      )
-    );
+  const modules = {
+    toolbar: {
+      container:"#customToolbar",
+    }
   }
-  const toggleInlineStyle = (inlineStyle) => {
-          editorChange(
-            RichUtils.toggleInlineStyle(
-              editorState,
-              inlineStyle
-            )
-          );
-  }
-  const getBlockStyle = (block)=> {
-        switch (block.getType()) {
-          case 'blockquote': return 'RichEditor-blockquote';
-          default: return null;
-        }
-      }
-  const submit = () => {
+    const submit = () => {
     props.onSubmit(value);
     setValue('');
   }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Example: insert as text link
+    const quill = quillRef.current.getEditor();
+    const range = quill.getSelection(true);
+    props.onFileUpload(file);
+    quill.insertText(range.index, file.name, "link", URL.createObjectURL(file));
+  };
   return (
     <div className='editor'>
-      {/* <BlockStyleControls editorState={editorState} onToggle={toggleBlockType} />
-      <InlineStyleControls
-                editorState={editorState}
-                onToggle={toggleInlineStyle}
-      />
-      <hr></hr>
-      <Editor editorState={editorState} onChange={editorChange} blockStyleFn={getBlockStyle}
-                  placeholder="Add Comment."
-                  spellCheck={true}/> */}
+      <input
+        type='file'
+        className='d-none'
+        id="quill-file-input"
+        onChange={handleFileChange}
+      ></input>
+      {/* Custom toolbar */}
+      <div id="customToolbar">
+        {/* Headers */}
+        <select className="ql-header" defaultValue="">
+          <option value="1"></option>
+          <option value="2"></option>
+          <option value=""></option>
+        </select>
+
+        {/* Text styles */}
+        <button className="ql-bold"></button>
+        <button className="ql-italic"></button>
+        <button className="ql-underline"></button>
+
+        {/* Lists */}
+        <button className="ql-list" value="ordered"></button>
+        <button className="ql-list" value="bullet"></button>
+
+        {/* Links & Images */}
+        <button className="ql-link"></button>
+        <button className="ql-image"></button>
+
+        {/* File Upload */}
+        <button type="button" onClick={() => document.getElementById("quill-file-input").click()}>
+            <FileUpIcon size={16} style={{"color":"#000"}}/>
+        </button>
+      </div>
+
       <ReactQuill theme="snow"
+        ref={quillRef}
         value={value}
-        onChange={editorChange}
+        onChange={setValue}
+        modules={modules}
         placeholder="Write something here..."/>
       <Button onClick={submit}>Add Comment</Button>
     </div>
   );
 }
-function BlockStyleControls(props)
-{
-  const { editorState } = props;
-  const selection = editorState.getSelection();
-  const blockType = editorState
-          .getCurrentContent()
-          .getBlockForKey(selection.getStartKey())
-          .getType();
-  const BLOCK_TYPES = [
-        {label: 'H1', style: 'header-one'},
-        {label: 'H2', style: 'header-two'},
-        {label: 'H3', style: 'header-three'},
-        {label: 'H4', style: 'header-four'},
-        {label: 'H5', style: 'header-five'},
-        {label: 'H6', style: 'header-six'},
-        {label: 'Blockquote', style: 'blockquote'},
-        {label: 'UL', style: 'unordered-list-item'},
-        {label: 'OL', style: 'ordered-list-item'},
-        {label: 'Code Block', style: 'code-block'},
-  ];
-  return (
-    <div className="RichEditor-controls">
-            {BLOCK_TYPES.map((type) =>
-              <StyleButton
-                key={type.label}
-                active={type.style === blockType}
-                label={type.label}
-                onToggle={props.onToggle}
-                style={type.style}
-              />
-            )}
-  </div>)
-}
-function StyleButton(props)
-{
-  const { label } = props;
-  const onToggle = (e) => {
-    e.preventDefault();
-    props.onToggle(props.style);
-  };
-  return (
-    <span className="RichEditor-styleButton" onMouseDown={onToggle}>
-        {label}
-    </span>
-  )
-}
-function InlineStyleControls(props){
-        const currentStyle = props.editorState.getCurrentInlineStyle();
-        const INLINE_STYLES = [
-        {label: 'Bold', style: 'BOLD'},
-        {label: 'Italic', style: 'ITALIC'},
-        {label: 'Underline', style: 'UNDERLINE'},
-        {label: 'Monospace', style: 'CODE'},
-      ];
-        return (
-          <div className="RichEditor-controls">
-            {INLINE_STYLES.map((type) =>
-              <StyleButton
-                key={type.label}
-                active={currentStyle.has(type.style)}
-                label={type.label}
-                onToggle={props.onToggle}
-                style={type.style}
-              />
-            )}
-          </div>
-        );
-      };
 
 export default TextEditorComponent;

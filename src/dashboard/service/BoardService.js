@@ -88,6 +88,19 @@ let BoardService = (function ()
         });
         return res.json();
     }
+    BoardService.prototype.archivedBoard = async function (params)
+    {
+        const res = await fetch(baseUrl+'board/archivedBoard',{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization':"Bearer "+ localStorage.getItem("token")
+        },
+        body: JSON.stringify(params),
+        });
+        return res.json();
+    }
+    
 
     return BoardService;
 })()

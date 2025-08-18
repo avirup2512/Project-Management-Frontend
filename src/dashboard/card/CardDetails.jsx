@@ -22,7 +22,8 @@ import { UserContext } from "../UserContext";
 function CardDetails({closeCall})
 {
     const dateService = new DateService();
-    const {loggedInUser} = useContext(UserContext);
+    const { loggedInUser } = useContext(UserContext);
+    const {projectId} = useParams();
     const { listId } = useParams();
     const { boardId } = useParams();
     const { cardId } = useParams();
@@ -319,6 +320,17 @@ function CardDetails({closeCall})
             dispatch(setCurrCard(currCard));
         }
     }
+     const onFileUpload = async (e) => {
+         console.log(projectId);
+         const formData = new FormData();
+         formData.append("file", e)
+         formData.append("boardId", boardId)
+         formData.append("cardId", cardId)
+         formData.append("projectId",projectId)
+         
+         const uploadedFile = await cardService.upload(formData)
+        
+    }
     const setReminderDateCall = async (date) => {        
         const editedCard = await cardService.editCard({reminderDate:""+date+"", boardId, listId, cardId:currentCard?.id});
         if (editedCard.status && editedCard.status == 200)
@@ -470,7 +482,7 @@ function CardDetails({closeCall})
                                             })
                                         }
                                         <div>
-                                            <TextEditorComponent onSubmit={addComment}></TextEditorComponent>
+                                            <TextEditorComponent onSubmit={addComment} onFileUpload={onFileUpload}></TextEditorComponent>
                                         </div>
                                     </div>
                                 </div>

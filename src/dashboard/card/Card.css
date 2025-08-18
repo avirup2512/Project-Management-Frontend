@@ -7,6 +7,9 @@
     transition: color 0.3s ease;
     margin-bottom: 5px;
 }
+.cardItem.cardIsChosen {
+   border:2px solid #000
+}
 .checkBox input{
     border:1px solid #7c7979
 }

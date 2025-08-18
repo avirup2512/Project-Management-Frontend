@@ -5,7 +5,8 @@ export const ListSlice = createSlice({
     initialState: {
         list: {},
         allList: [],
-        currentCard:{}
+        currentCard: {},
+        dragging:false
     },
     reducers: {
         setAllList: (state,action) => {
@@ -17,8 +18,11 @@ export const ListSlice = createSlice({
         setCurrentCard: (state, action) =>
         {
             state.currentCard = action.payload
+        },
+        setDragging: (state, action) => {
+            state.dragging = action.payload;
         }
     }
 })
-export const { setList,setAllList,setCurrentCard } = ListSlice.actions;
+export const { setList,setAllList,setCurrentCard, setDragging } = ListSlice.actions;
 export default ListSlice.reducer;

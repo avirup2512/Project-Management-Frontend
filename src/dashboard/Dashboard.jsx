@@ -111,8 +111,8 @@ function Dashboard({messageSenderDashboard})
                                     <Route path="project" element={<Project />}></Route>
                                     <Route path="board/:projectId" element={<Board />}></Route>
                                     <Route path="user" element={<UserProfile></UserProfile>}></Route>
-                                    <Route path="list/:boardId" element={<ListContainer />}></Route>
-                                    <Route path="list/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
+                                    <Route path="list/:projectId/:boardId" element={<ListContainer />}></Route>
+                                    <Route path="list/:projectId/:boardId/:listId/card/:cardId" element={<CardDetails />}></Route>
                                 </Routes>
                             </div>
                         </div>

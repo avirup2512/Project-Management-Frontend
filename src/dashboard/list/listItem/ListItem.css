@@ -16,6 +16,13 @@
     position: relative;
     max-height: 80vh;
 }
+.listItem.DRAGGING {
+    border-style: dashed;
+    border-color: #e21515;
+}
+.listItem.DRAGGING .fetchedList .scroll{
+    /* visibility:hidden; */
+}
 .listItem .fetchedList .name {
     word-wrap: break-word;
     word-break: break-all;
@@ -45,4 +52,7 @@
 .scroll{
     overflow-y: auto;
     max-height: 50vh;
+}
+.cardIsChosen{
+    /* background: yellow; */
 }

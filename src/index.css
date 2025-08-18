@@ -67,3 +67,10 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+.sortable-chosen,
+.sortable-drag {
+  background: white !important;
+  opacity: 1 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  z-index: 9999 !important;
+}

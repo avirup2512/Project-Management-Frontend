@@ -7,16 +7,17 @@ import { ReactSortable } from "react-sortablejs";
 import Card from "../../card/Card";
 import Menu from "../../../shared/Menu";
 import { useDispatch, useSelector } from "react-redux";
-import { setAllList, setCurrentCard } from "../ListSlice";
+import { setAllList, setCurrentCard, setDragging } from "../ListSlice";
 import CardModal from "../../card/CardDetails";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import ConfirmationModal from "../../../shared/ConfirmationModal";
-function ListItem({item,addList,properties,copyCard,provided})
+function ListItem({item,addList,properties,copyCard,provided,cardDragging})
 {
     const { boardId } = useParams();
     const navigate = useNavigate();
     const allList = useSelector((e) => e.list.allList);
+    const dragging = useSelector((e) => e.list.dragging);
     const dispatch = useDispatch();
     const [editMode, setEditMode] = useState(false);
     const [cardEditMode, setCardEditMode] = useState(false);
@@ -27,7 +28,6 @@ function ListItem({item,addList,properties,copyCard,provided})
     const [menuShow, setMenuShow] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [lastPosition, setLastPosition] = useState(0);
-
     const [confirmationModalProp, setConfirmationProp] = useState({
         showModal: false,
         message: "",
@@ -48,8 +48,6 @@ function ListItem({item,addList,properties,copyCard,provided})
     const listService = new ListService();
     const cardService = new CardService();
 
-    useEffect(() => {        
-    }, [properties]);
     useEffect(() => {             
         if (!addList)
             setListName(item.name);
@@ -232,9 +230,21 @@ function ListItem({item,addList,properties,copyCard,provided})
         //     setMenuShow(false);
         // }
     }
+    const handleDragStart = (evt) => {
+        
+        evt.item.style.opacity = "1";
+        console.log(evt.item.style.opacity);
+        if (evt.clone) {
+            evt.clone.style.opacity = "1";
+        }
+        dispatch(setDragging(true));
+    };
+    const handleDragEnd  = (evt) => {
+        dispatch(setDragging(false));
+    };
     return (
         <>
-            <div className={addList ? "cursor-pointer listItem margin-left-auto" : "listItem"} data-id={item?.id} data-boardid={item?.board_id}
+            <div className={"listItem" + (addList ? "cursor-pointer margin-left-auto" : "") + (dragging === true ? " DRAGGING" : '')} data-id={item?.id} data-boardid={item?.board_id}
             data-name={item?.name}>
                 {
                     !addList &&
@@ -263,7 +273,8 @@ function ListItem({item,addList,properties,copyCard,provided})
                             <hr></hr>
                             <div className="scroll" data-list-id={item?.id}>
                                 
-                                { item.hasOwnProperty("cards") &&  <ReactSortable className="mb-2 ss" list={item?.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {                                        
+                                {item.hasOwnProperty("cards") &&
+                                    <ReactSortable onStart={handleDragStart} onEnd={handleDragEnd} chosenClass="cardIsChosen" ghostClass="" className="mb-2 ss" list={item?.cards.map(item => ({ ...item }))} sort={true} setList={(newState) => {                                        
                                        // onDragEnd(newState)
                                     setCards(newState); 
                                         properties.updateCards(item.id, newState);

@@ -1,30 +1,35 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import BoardService from "../service/BoardService";
-import { Button, Dropdown, Form, Modal } from "react-bootstrap";
+import { Button, Dropdown, Form, Modal, Tab, Tabs } from "react-bootstrap";
 import ListComponent from "../../shared/List";
 import debounce from "lodash.debounce";
 import SearchBox from "../../shared/SerachBox";
 import ConfirmationModal from "../../shared/ConfirmationModal";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setBoard, setBoardList } from "./BoardSlice";
+import { resetSelectedBoard, selectAllBoard, setActiveBoardList, setArchivedBoardList, setBoard, setBoardList } from "./BoardSlice";
 import { setUserList } from "../userProfile/UserSlice";
 import { setAllRoles, setBoardPaginationDefault, setBoardPaginationObject, setPage, setPaginateHappen } from "../DashboardSlice";
 import "./Board.css";
+import { motion } from "framer-motion";
 
 function Board({ paginate }) {
     const hasMounted = useRef(false);
     const { projectId } = useParams();
     const userState = useSelector((state) => state.auth.user);
     const boardSelector = useSelector((state) => state.board);
+    const selectedBoard = useSelector((state) => state.board.selectedBoard);
+    const selectedBoardRef = useRef(selectedBoard);
     const projectSelector = useSelector((state) => state.project);
     const boardList = useSelector((state) => state.board.boardList);
+    const activeBoardList = useSelector((state) => state.board.activeBoardList);
+    const archivedBoardList = useSelector((state) => state.board.archivedBoardList);
     const allRoles = useSelector((e) => e.dashboard.allRoles);
     const projectList = useSelector((e) => e.project.projectList);
     const paginateHappen = useSelector((p) => p.dashboard.paginateHappen);
     const paginationObject = useSelector((e) => e.dashboard.boardPaginationObject);
     const defaultPaginationObject = useSelector((e) => e.dashboard.defaultPaginationObject);
-
+    const [activeTabKey, setActiveTabKey] = useState("activeBoard");
     const dispatch = useDispatch();
     const navigate = useNavigate();
     let currentId = '';
@@ -58,7 +63,8 @@ function Board({ paginate }) {
         showModal: false,
         message: "",
         action: function (t) { onConfirm(t) },
-        close: function () { closeModal() }
+        close: function () { closeModal() },
+        selectedItem:{}
     })
     const [listProperties, setListProperties] = useState({
         users: [],
@@ -66,6 +72,12 @@ function Board({ paginate }) {
         delete: function (id) { deleteBoard(id, false) },
         open: function (id) { openBoard(id) }
     })
+    useEffect(() => {
+        dispatch(resetSelectedBoard());
+    }, [])
+    useEffect(() => {
+        selectedBoardRef.current = selectedBoard;
+    },[selectedBoard])
     useEffect(() => {
         dispatch(setPage("board"));
         dispatch(setBoardPaginationDefault(defaultPaginationObject));
@@ -88,6 +100,26 @@ function Board({ paginate }) {
         if (board.status && board.status == 200) {
 
             dispatch(setBoardList(board.data));
+            const activeList = [];
+            const archivedList = [];
+            console.log(board.data);
+            
+            for (var x in board.data)
+            {
+                if (board.data[x].is_archived)
+                {
+                    archivedList.push(board.data[x]);
+                }
+                if (board.data[x].is_active || board.data[x].is_active == null && !board.data[x].is_archived)
+                {
+                    activeList.push(board.data[x]);
+                }
+            }
+            console.log(activeList);
+            console.log(archivedList);
+            
+            dispatch(setActiveBoardList(activeList));
+            dispatch(setArchivedBoardList(archivedList));
             const { itemPerPage } = paginationObject;
             const items = { items: Math.ceil(board?.totalCount / itemPerPage), totalCount: board?.totalCount };
             dispatch(setBoardPaginationObject({ ...paginationObject, ...items }))
@@ -205,13 +237,24 @@ function Board({ paginate }) {
         currentId = "";
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }))
     }
-    const onConfirm = function (t) {
-        if (t) {
+    const onConfirm = async function (t) {
+        console.log(t);
+        if (t == "archive")
+        {
+            console.log(selectedBoardRef);
+            
+            const seletedList = [];
+            for (var x in selectedBoardRef.current)
+            {
+                seletedList.push(x)
+            }
+            const board = await boardService.archivedBoard({boardIds:seletedList, archive:1});
+        }else if (t === true) {
             deleteBoard(currentId, true)
         }
     }
     const openBoard = function (id) {
-        navigate("../list/" + id)
+        navigate("../list/"+projectId+"/" + id)
     }
     const addAllProjectMember = () => {
         const projectList = JSON.parse(JSON.stringify(projectSelector.projectList));
@@ -221,6 +264,17 @@ function Board({ paginate }) {
             user: users,
         };
         dispatch(setBoard(updatedBoard));
+    }
+    const selectBoard = (e) => {
+        if(e.target.checked)
+            dispatch(selectAllBoard())
+        else
+            dispatch(resetSelectedBoard())
+    }
+    const openAction = (e) => {
+        console.log(e);
+        
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:e, message: `Are you sure want to `+e+` board?` }));
     }
     return (
         <>
@@ -239,46 +293,113 @@ function Board({ paginate }) {
             </div>
             <div className="clearfix"></div>
             <hr></hr>
-            {
-                isEmpty ?
-                    <>
-                        <p>No Board</p>
-                    </> :
-                    <>
-                        <section className="tableHeader d-flex align-center">
-                            <section className="headerItem">
-                                <Form.Group className="" controlId="formBasicCheckbox">
-                                    <Form.Check type="checkbox" />
-                                </Form.Group>
-                            </section>
-                            <section className="headerItem">
-                                Name
-                            </section>
-                            <section className="headerItem">
-                                Assignee
-                            </section>
-                            <section className="headerItem">
-                                Status
-                            </section>
-                            <section className="headerItem">
-                                Card Stautus
-                            </section>
-                            <section className="headerItem">
-                                Created At
-                            </section>
-                            <section className="headerItem">
-                                Action
-                            </section>
+            <Tabs id="list-container-tab"
+                activeKey={activeTabKey}
+                onSelect={(k) => setActiveTabKey(k)}
+            >
+                <Tab eventKey="activeBoard" title="Active">
+                    {
+                    isEmpty ?
+                        <>
+                            <p>No Board</p>
+                        </> :
+                        <>
+                            {
+                                activeBoardList.length > 0 &&
+                                <motion.section className="actionMenu mb-3 p-2">
+                                <Button className="ms-0 button-primary" onClick={()=>{openAction("archive")}} size="sm">Archive</Button>
+                                <Button className="ms-2 button-primary" onClick={()=>{openAction("activate")}} size="sm">Activate</Button>
+                                <Button className="ms-2 button-primary" onClick={()=>{openAction("deactivate")}} size="sm">De Activate</Button>
+                                </motion.section>
+                            }
+                            <section className="tableHeader d-flex align-center">
+                                <section className="headerItem">
+                                    <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
+                                        <Form.Check type="checkbox" />
+                                    </Form.Group>
+                                </section>
+                                <section className="headerItem">
+                                    Name
+                                </section>
+                                <section className="headerItem">
+                                    Assignee
+                                </section>
+                                <section className="headerItem">
+                                    Status
+                                </section>
+                                <section className="headerItem">
+                                    Card Stautus
+                                </section>
+                                <section className="headerItem">
+                                    Created At
+                                </section>
+                                <section className="headerItem">
+                                    Action
+                                </section>
 
-                        </section>
-                        <section className=" height-100 padding-bottom-50-percent">
-                            {Object.entries(boardList).map(([index, item]) => {
-                                return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
-                            })}
+                            </section>
+                            <section className=" height-100 padding-bottom-50-percent">
+                                    {
+                                    activeBoardList.length > 0 &&   activeBoardList.map((item,index) => {
+                                    return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                                })}
 
-                        </section>
-                    </>
-            }
+                            </section>
+                        </>
+                    }
+                </Tab>
+                <Tab eventKey="archivedBoard" title="Archived">
+                        {
+                    isEmpty ?
+                        <>
+                            <p>No Board</p>
+                        </> :
+                        <>
+                            {
+                                archivedBoardList.length > 0 &&
+                                <motion.section className="actionMenu mb-3 p-2">
+                                <Button className="ms-0 button-primary" size="sm">Archive</Button>
+                                <Button className="ms-2 button-primary" size="sm">Activate</Button>
+                                <Button className="ms-2 button-primary" size="sm">De Activate</Button>
+                                </motion.section>
+                            }
+                            <section className="tableHeader d-flex align-center">
+                                <section className="headerItem">
+                                    <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
+                                        <Form.Check type="checkbox" />
+                                    </Form.Group>
+                                </section>
+                                <section className="headerItem">
+                                    Name
+                                </section>
+                                <section className="headerItem">
+                                    Assignee
+                                </section>
+                                <section className="headerItem">
+                                    Status
+                                </section>
+                                <section className="headerItem">
+                                    Card Stautus
+                                </section>
+                                <section className="headerItem">
+                                    Created At
+                                </section>
+                                <section className="headerItem">
+                                    Action
+                                </section>
+
+                            </section>
+                            <section className=" height-100 padding-bottom-50-percent">
+                                    {
+                                    archivedBoardList.length > 0 && archivedBoardList.map((item,index) => {
+                                    return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                                })}
+
+                            </section>
+                        </>
+                    }
+                </Tab>
+            </Tabs>
             {showAddModal && (
                 <div className="modal show d-block" tabIndex="-1">
                     <Modal show={showAddModal} size="lg">

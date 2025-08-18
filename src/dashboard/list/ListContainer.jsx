@@ -26,7 +26,9 @@ function ListContainer({ onTrigger }) {
     const [listForMultiSelect, setListForMultiSelect] = useState([]);
     const [activeList, setActiveList] = useState([]);
     const [archivedList, setArchivedList] = useState([]);
+    const [backLogList, setbackLogList] = useState([]);
     const [copyCardData, setCopyCardData] = useState({});
+    const [cardDragging, setCardDragging] = useState(false);
     const [activeTabKey, setActiveTabKey] = useState("activeList");
     const [filterItems, setFilterItems] = useState([
         { value: "completeCard", label: "Show Complete Card" },
@@ -44,7 +46,7 @@ function ListContainer({ onTrigger }) {
         updateCards: (listId, updatedCards) => { updateCard(listId, updatedCards) },
         completeCard:(listId,cardId,value)=> {completeCard(listId,cardId,value)},
         listEdited:()=>{editList()},
-        cards:[]
+        cards: []
     })
     useEffect(() => {      
         getList();
@@ -53,6 +55,7 @@ function ListContainer({ onTrigger }) {
         const listCopy = JSON.parse(JSON.stringify(allList));
         const activeList = [];
         const archivedList = [];
+        const backLogList = [];
         if(listCopy && listCopy.length > 0)
         {
             listCopy.forEach((e) => {            
@@ -64,10 +67,15 @@ function ListContainer({ onTrigger }) {
                 } else {
                     archivedList.push(e);
                 }
+                if (e.is_backloged)
+                {
+                    backLogList.push(e);
+                }
             });
         }
         setActiveList(activeList);
         setArchivedList(archivedList);
+        setbackLogList(backLogList);
         setListForMultiSelect(listCopy);
     },[allList])
     const getList = async () => {
@@ -208,6 +216,33 @@ function ListContainer({ onTrigger }) {
                             activeKey={activeTabKey}
                             onSelect={(k) => setActiveTabKey(k)}
                         >
+                            <Tab eventKey="backLog" title="Backlog">
+                                <DragDropContext onDragEnd={changePosition}>
+                                    <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
+                                        {(provided, snapshot) => (
+                                            <div ref={provided.innerRef}
+                                            style={getListStyle(snapshot.isDraggingOver)}
+                                            {...provided.droppableProps}>
+                                                {backLogList.map((e, i) => (
+                                                    <Draggable
+                                                    key={i}
+                                                    draggableId={('index'+i).toString()}
+                                                    index={i}>
+                                                        {(draggableProvided, snapshot) => (
+                                                            <div ref={draggableProvided.innerRef}
+                                                            
+                                                                {...draggableProvided.draggableProps}>
+                                                                <ListItem copyCard={(e)=> openListModal(e) } provided={draggableProvided} addList={false} item={e} properties={listProperty}  key={i} />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                <ListItem properties={listProperty} addList={true} />
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </Tab>
                             <Tab eventKey="activeList" title="Active List">
                                 <DragDropContext onDragEnd={changePosition}>
                                     <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
@@ -262,22 +297,10 @@ function ListContainer({ onTrigger }) {
                                 </DragDropContext>
                             </Tab>
                         </Tabs>
-                        
                         {
                             showListModal && <MultiSelectSearch copyCardData={copyCardData} properties={multiSearchProperties} item={listForMultiSelect} />
                         }
                     </div>
-                    {/* <ReactSortable list={allList.map(item => ({ ...item }))} chosenClass={'chosen'} sort={true} setList={(list) => {
-                        let obj = JSON.parse(JSON.stringify(list));
-                        dispatch(setAllList(obj)); 
-                    }} animation={200} easing={"cubic-bezier(1, 0, 0, 1)"}
-                        onUpdate={changePosition} 
-                        className="listContainer d-flex">
-                        {allList.map((e,i) => (
-                            <ListItem addList={false} item={e} properties={listProperty}  key={i} />
-                        ))}
-                            <ListItem properties={listProperty} addList={true} />
-                    </ReactSortable> */}
                 </>
             </div>
         </>

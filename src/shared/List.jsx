@@ -2,16 +2,19 @@ import Alert from 'react-bootstrap/Alert';
 import "./List.css";
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setBoard, setBoardList } from '../dashboard/board/BoardSlice';
+import { removeSelectedBoard, setBoard, setBoardList, setSelectedBoard } from '../dashboard/board/BoardSlice';
 import { Button, Form, ProgressBar } from 'react-bootstrap';
 import { setProject } from '../dashboard/project/ProjectSlice';
 import { Archive, ArchiveX, Copy, Delete, Edit, Edit2 } from 'lucide-react';
 function ListComponent({ item, properties, users, loggedInUser, type }) {
-  const boardSelector = useSelector((state) =>  state.board);
+  const boardSelector = useSelector((state) => state.board);
+  const selectedBoard = useSelector((state) =>  state.board.selectedBoard);
   const dispatch = useDispatch();
 
   useEffect(() => {
-  }, [boardSelector])
+    console.log(selectedBoard);
+    
+  }, [selectedBoard])
   const open = function ()
   {
     properties.open(item.id);
@@ -36,12 +39,20 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
   {
     properties.delete(item.id);
   }
+  const selectBoard = (e) => {
+    if(e.target.checked)
+      dispatch(setSelectedBoard(item))
+    else {
+      dispatch(removeSelectedBoard(item.id))
+    }
+    
+  }
   return (
       <>
         <div className="list d-flex align-center">  
           <div className='listItems'>
-              <Form.Group className="" controlId="formBasicCheckbox">
-                  <Form.Check type="checkbox" />
+              <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
+                  <Form.Check type="checkbox" checked={selectedBoard.hasOwnProperty(item.id)} />
               </Form.Group>
           </div>
           <div onClick={open} className='align-content-center boardName listItems'>{item?.name}</div>
