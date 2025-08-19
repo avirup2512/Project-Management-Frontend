@@ -64,12 +64,15 @@ function Board({ paginate }) {
         message: "",
         action: function (t) { onConfirm(t) },
         close: function () { closeModal() },
-        selectedItem:{}
+        selectedItem: {},
+        type:""
     })
     const [listProperties, setListProperties] = useState({
         users: [],
         edit: function () { editBoard() },
         delete: function (id) { deleteBoard(id, false) },
+        archive: function (id) { archiveBoard(id, false) },
+        archiveRestore: function (id) { archiveRestore(id, false) },
         open: function (id) { openBoard(id) }
     })
     useEffect(() => {
@@ -170,6 +173,8 @@ function Board({ paginate }) {
         }
     }
     const deleteBoard = async function (id, t) {
+        console.log(t);
+        
         currentId = id;
         if (!t) {
             setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, message: "Are you sure want to delete board?" }));
@@ -178,8 +183,17 @@ function Board({ paginate }) {
             if (board.status && board.status == 200) {
                 getBoard(projectId);
             }
-
         }
+    }
+    const archiveBoard = async function (id, t) {
+        console.log(id);
+        currentId = id;
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"archive", message: "Are you sure want to archive board?" }));
+    }
+    const archiveRestore = async function (id, t) {
+        console.log(id);
+        currentId = id;
+        setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:"archiveRestore", message: "Are you sure want to restore the board?" }));
     }
     const editBoard = async function () {
         setModalShow(true);
@@ -241,17 +255,40 @@ function Board({ paginate }) {
     }
     const onConfirm = async function (t) {
         console.log(t);
+        console.log(currentId);
+        
         if (t == "archive")
         {
-            console.log(selectedBoardRef);
-            
             const seletedList = [];
-            for (var x in selectedBoardRef.current)
+            if (currentId)
             {
-                seletedList.push(x)
+                seletedList.push(currentId);
+            } else {
+                for (var x in selectedBoardRef.current)
+                {
+                    seletedList.push(x)
+                }
             }
-            const board = await boardService.archivedBoard({boardIds:seletedList, archive:1});
-        }else if (t === true) {
+            const board = await boardService.archivedBoard({ boardIds: seletedList, archive: 1 });
+            if (board.status && board.status == 200)
+            {
+                
+            }
+        } else if ( t == "archiveRestore")
+        {
+            const seletedList = [];
+            if (currentId)
+            {
+                seletedList.push(currentId);
+            } else {
+                for (var x in selectedBoardRef.current)
+                {
+                    seletedList.push(x)
+                }
+            }
+            const board = await boardService.archivedBoard({ boardIds: seletedList, archive: 0 });
+        }
+        else if (t === true) {
             deleteBoard(currentId, true)
         }
     }
@@ -346,7 +383,7 @@ function Board({ paginate }) {
                             <section className=" height-100 padding-bottom-50-percent">
                                     {
                                     activeBoardList.length > 0 &&   activeBoardList.map((item,index) => {
-                                    return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                                    return <ListComponent type="board" isArchive={false} key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                                 })}
 
                             </section>
@@ -396,7 +433,7 @@ function Board({ paginate }) {
                             <section className=" height-100 padding-bottom-50-percent">
                                     {
                                     archivedBoardList.length > 0 && archivedBoardList.map((item,index) => {
-                                    return <ListComponent type="board" key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
+                                    return <ListComponent type="board" isArchive={true} key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                                 })}
 
                             </section>

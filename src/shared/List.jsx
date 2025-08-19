@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {  removeSelectedBoard, setBoard, setBoardList, setSelectedBoard } from '../dashboard/board/BoardSlice';
 import { Button, Form, ProgressBar } from 'react-bootstrap';
 import { setProject } from '../dashboard/project/ProjectSlice';
-import { Archive, ArchiveX, Copy, Delete, Edit, Edit2 } from 'lucide-react';
-function ListComponent({ item, properties, users, loggedInUser, type }) {
+import { Archive, ArchiveRestore, ArchiveX, Copy, Delete, Edit, Edit2, Trash } from 'lucide-react';
+function ListComponent({ item, properties, users, loggedInUser, type,isArchive }) {
   const boardSelector = useSelector((state) => state.board);
   const selectedBoard = useSelector((state) => state.board.selectedBoard);
 
@@ -41,6 +41,15 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
   {
     properties.delete(item.id);
   }
+  const archiveAction = function ()
+  {
+    properties.archive(item.id);
+  }
+  const archiveRestoreAction = function ()
+  {
+    properties.archiveRestore(item.id);
+  }
+  
   const selectBoard = (e) => {
     if(e.target.checked)
       dispatch(setSelectedBoard(item))
@@ -80,11 +89,24 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
           </div>
           <div className='icon section listItems'>
           {/* <i onClick={open} className="bi bi-eye-fill primary"></i> */}
-          {
+          {/* {
             type != "project" && <Copy size={16} />
+          } */}
+          
+          {
+            !isArchive && 
+            <>
+              <Archive size={16} onClick={archiveAction} />
+              <Edit2 onClick={edit} size={16} />
+            </>
           }
-          <Edit2 onClick={edit} size={16} />
-          <ArchiveX size={16} onClick={deleteAction}/>
+          {
+            isArchive && 
+            <>
+              <Trash size={16} onClick={deleteAction}></Trash>
+              <ArchiveRestore size={16} onClick={archiveRestoreAction}/>
+            </>
+          }
           </div>
         </div>
     </>
