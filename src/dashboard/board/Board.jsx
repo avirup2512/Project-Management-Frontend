@@ -73,9 +73,11 @@ function Board({ paginate }) {
         open: function (id) { openBoard(id) }
     })
     useEffect(() => {
-        dispatch(resetSelectedBoard());
+        dispatch(resetSelectedBoard({}));
     }, [])
     useEffect(() => {
+        console.log(selectedBoard);
+        
         selectedBoardRef.current = selectedBoard;
     },[selectedBoard])
     useEffect(() => {
@@ -276,6 +278,10 @@ function Board({ paginate }) {
         
         setConfirmationProp((prevItem) => ({ ...prevItem, showModal: true, type:e, message: `Are you sure want to `+e+` board?` }));
     }
+    const tabSelection = (k) => {
+        dispatch(resetSelectedBoard({}));
+        setActiveTabKey(k);
+    }
     return (
         <>
             <div className="header d-flex align-center justify-content-space-between">
@@ -295,7 +301,7 @@ function Board({ paginate }) {
             <hr></hr>
             <Tabs id="list-container-tab"
                 activeKey={activeTabKey}
-                onSelect={(k) => setActiveTabKey(k)}
+                onSelect={(k) => tabSelection(k)}
             >
                 <Tab eventKey="activeBoard" title="Active">
                     {
@@ -305,7 +311,7 @@ function Board({ paginate }) {
                         </> :
                         <>
                             {
-                                activeBoardList.length > 0 &&
+                                Object.keys(selectedBoard).length > 0 &&
                                 <motion.section className="actionMenu mb-3 p-2">
                                 <Button className="ms-0 button-primary" onClick={()=>{openAction("archive")}} size="sm">Archive</Button>
                                 <Button className="ms-2 button-primary" onClick={()=>{openAction("activate")}} size="sm">Activate</Button>
@@ -336,7 +342,6 @@ function Board({ paginate }) {
                                 <section className="headerItem">
                                     Action
                                 </section>
-
                             </section>
                             <section className=" height-100 padding-bottom-50-percent">
                                     {
@@ -356,11 +361,10 @@ function Board({ paginate }) {
                         </> :
                         <>
                             {
-                                archivedBoardList.length > 0 &&
+                                Object.keys(selectedBoard).length > 0 &&
                                 <motion.section className="actionMenu mb-3 p-2">
-                                <Button className="ms-0 button-primary" size="sm">Archive</Button>
-                                <Button className="ms-2 button-primary" size="sm">Activate</Button>
-                                <Button className="ms-2 button-primary" size="sm">De Activate</Button>
+                                <Button className="ms-0 button-primary" size="sm">Delete</Button>
+                                <Button className="ms-2 button-primary" size="sm">Restore</Button>
                                 </motion.section>
                             }
                             <section className="tableHeader d-flex align-center">

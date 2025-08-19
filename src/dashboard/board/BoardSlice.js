@@ -30,7 +30,7 @@ export const BoardSlice = createSlice({
             delete state.selectedBoard[action.payload];
         },
         resetSelectedBoard: (state, action) => {
-            state.selectedBoard = {};
+            state.selectedBoard = action.payload;
         },
         selectAllBoard: (state, action) => {
             for (var x in state.boardList)

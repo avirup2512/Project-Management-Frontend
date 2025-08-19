@@ -1,18 +1,20 @@
 import Alert from 'react-bootstrap/Alert';
 import "./List.css";
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { removeSelectedBoard, setBoard, setBoardList, setSelectedBoard } from '../dashboard/board/BoardSlice';
+import {  removeSelectedBoard, setBoard, setBoardList, setSelectedBoard } from '../dashboard/board/BoardSlice';
 import { Button, Form, ProgressBar } from 'react-bootstrap';
 import { setProject } from '../dashboard/project/ProjectSlice';
 import { Archive, ArchiveX, Copy, Delete, Edit, Edit2 } from 'lucide-react';
 function ListComponent({ item, properties, users, loggedInUser, type }) {
   const boardSelector = useSelector((state) => state.board);
-  const selectedBoard = useSelector((state) =>  state.board.selectedBoard);
+  const selectedBoard = useSelector((state) => state.board.selectedBoard);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     console.log(selectedBoard);
+    console.log(item.id);
     
   }, [selectedBoard])
   const open = function ()
@@ -45,15 +47,15 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
     else {
       dispatch(removeSelectedBoard(item.id))
     }
-    
   }
   return (
       <>
         <div className="list d-flex align-center">  
           <div className='listItems'>
-              <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
+          {
+            type != "project" && <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
                   <Form.Check type="checkbox" checked={selectedBoard.hasOwnProperty(item.id)} />
-              </Form.Group>
+              </Form.Group>}
           </div>
           <div onClick={open} className='align-content-center boardName listItems'>{item?.name}</div>
           <div className='users section listItems'>
@@ -64,19 +66,23 @@ function ListComponent({ item, properties, users, loggedInUser, type }) {
                     }
           </div>
           <div className='status listItems'>
-            <p className='mb-0'>Active</p>
+          <p className='mb-0'>Active</p>
           </div>
           <div className='owner listItems'>
-          {/* {loggedInUser.id == item.board_user_id && <i className="bi bi-person-circle primary"></i>} */}
-          <ProgressBar className='cardStatus' now={(item.totalCompleteCard/item.totalCard)*100} />
-          <span>{ item.totalCompleteCard}/{ item.totalCard}</span>
+          {type != "project" && 
+            <>
+            <ProgressBar className='cardStatus' now={(item.totalCompleteCard/item.totalCard)*100} />
+            <span>{ item.totalCompleteCard}/{ item.totalCard}</span></>
+          }
           </div>
           <div className='listItems'>
-              <i className="bi bi-plus-circle primary"></i>
+              {/* <i className="bi bi-plus-circle primary"></i> */}
           </div>
           <div className='icon section listItems'>
           {/* <i onClick={open} className="bi bi-eye-fill primary"></i> */}
-          <Copy size={16}/>
+          {
+            type != "project" && <Copy size={16} />
+          }
           <Edit2 onClick={edit} size={16} />
           <ArchiveX size={16} onClick={deleteAction}/>
           </div>

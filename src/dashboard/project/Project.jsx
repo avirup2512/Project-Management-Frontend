@@ -254,10 +254,35 @@ function Project()
                     <p>No Project</p>
                 </> :
                     <>
+                        <section className="tableHeader d-flex align-center">
+                            <section className="headerItem">
+                                {/* <Form.Group className="" controlId="formBasicCheckbox">
+                                    <Form.Check type="checkbox" />
+                                </Form.Group> */}
+                            </section>
+                            <section className="headerItem">
+                                    Name
+                            </section>
+                            <section className="headerItem">
+                                Assignee
+                            </section>
+                            <section className="headerItem">
+                                Status
+                            </section>
+                            <section className="headerItem">
+                                File Stautus
+                            </section>
+                            <section className="headerItem">
+                                Created At
+                            </section>
+                            <section className="headerItem">
+                                Action
+                            </section>
+                    </section>
                     { Object.entries(projectSelector.projectList).map(([index, item])=>{
                         return <ListComponent type="project"  key={index} item={item} properties={listProperties} users={item.user} loggedInUser={userState} />
                     }) }
-                </>
+                    </>
             }
             {showAddModal && (
                 <div className="modal show d-block" tabIndex="-1">
