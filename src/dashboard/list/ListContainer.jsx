@@ -245,9 +245,10 @@ function ListContainer({ onTrigger }) {
                             </Tab>
                             <Tab eventKey="activeList" title="Active List">
                                 <DragDropContext onDragEnd={changePosition}>
-                                    <Droppable droppableId="droppable" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
+                                    <Droppable droppableId="droppableIDS" isDropDisabled={false} isCombineEnabled={true} ignoreContainerClipping={true} className="listContainer d-flex">
                                         {(provided, snapshot) => (
                                             <div ref={provided.innerRef}
+                                                className="droppableIDS"
                                             style={getListStyle(snapshot.isDraggingOver)}
                                             {...provided.droppableProps}>
                                                 {activeList.map((e, i) => (

@@ -318,7 +318,7 @@ function Board({ paginate }) {
                                 <Button className="ms-2 button-primary" onClick={()=>{openAction("deactivate")}} size="sm">De Activate</Button>
                                 </motion.section>
                             }
-                            <section className="tableHeader d-flex align-center">
+                            <section className="tableHeader d-flex align-center d-none-medium">
                                 <section className="headerItem">
                                     <Form.Group className="" onChange={selectBoard} controlId="formBasicCheckbox">
                                         <Form.Check type="checkbox" />

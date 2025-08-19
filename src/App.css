@@ -112,3 +112,50 @@ body.dashboard{
   box-shadow: none;
 }
 /* GLOBAL CSS ENDS  */
+
+/* Extra small devices (phones, <576px) */
+@media (max-width: 575.98px) {
+  .tableHeader.d-none-medium {
+      display: none !important
+    }
+    .list{
+      flex-direction: column;
+      align-items: flex-start !important;
+      margin-top: 10px;
+    }
+    .list .listItems{
+      width: 100% !important;
+      margin: 3px !important;
+    }
+    .droppableIDS {
+      flex-direction: column !important;
+    }
+    .listItem
+    {
+      min-width: 0 !important;
+    }
+}
+
+/* Small devices (landscape phones, ≥576px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  
+}
+
+/* Medium devices (tablets, ≥768px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+ 
+}
+
+/* Large devices (desktops, ≥992px) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  body {
+    background: lightcoral;
+  }
+}
+
+/* Extra large devices (large desktops, ≥1200px) */
+@media (min-width: 1200px) {
+  body {
+    background: lightgray;
+  }
+}
