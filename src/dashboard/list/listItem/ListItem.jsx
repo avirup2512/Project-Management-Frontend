@@ -40,7 +40,8 @@ function ListItem({item,addList,properties,copyCard,provided,cardDragging})
         completeCard:(id,value)=>{completeCard(id,value)}
     })
     const [menuProperties, setMenuProperties] = useState({
-        items: [{ name: "Add Card", action: () => { addCard() } },
+        items: [
+            { name: "Add Card", action: () => { addCard() } },
             { name: "Archive List", action: () => { archiveList() } }
         ],
         closeMenu:()=>{setMenuShow(false)}

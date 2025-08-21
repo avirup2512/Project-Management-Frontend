@@ -6,9 +6,9 @@ let BoardService = (function ()
     {
         
     }
-    BoardService.prototype.getAllBoards = async function (token, projectId,itemLimit, offset)
+    BoardService.prototype.getAllBoards = async function (token, projectId,isActive,itemLimit, offset)
     {
-        const res = await fetch(baseUrl+'board/getAllBoard/'+projectId+'/'+itemLimit+'/'+offset+'',{
+        const res = await fetch(baseUrl+'board/getAllBoard/'+projectId+'/'+isActive+'/'+itemLimit+'/'+offset+'',{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -90,6 +90,8 @@ let BoardService = (function ()
     }
     BoardService.prototype.archivedBoard = async function (params)
     {
+        console.log(params);
+        
         const res = await fetch(baseUrl+'board/archivedBoard',{
         method: 'PUT',
         headers: {
