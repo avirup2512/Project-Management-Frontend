@@ -324,7 +324,11 @@ function Board({ paginate }) {
         const items = {
           items: Math.ceil(total / itemPerPage),
           totalCount: total,
-          currentOffset: itemPerPage * (Math.ceil(total / itemPerPage) - 1),
+          currentOffset:
+            itemPerPage *
+            (Math.ceil(total / itemPerPage) == 0
+              ? Math.ceil(total / itemPerPage)
+              : Math.ceil(total / itemPerPage) - 1),
         };
         dispatch(setBoardPaginationObject({ ...paginationObject, ...items }));
         dispatch(setPaginateHappen(!paginateHappen));
@@ -357,7 +361,11 @@ function Board({ paginate }) {
         const items = {
           items: Math.ceil(total / itemPerPage),
           totalCount: total,
-          currentOffset: itemPerPage * (Math.ceil(total / itemPerPage) - 1),
+          currentOffset:
+            itemPerPage *
+            (Math.ceil(total / itemPerPage) == 0
+              ? Math.ceil(total / itemPerPage)
+              : Math.ceil(total / itemPerPage) - 1),
         };
         dispatch(setBoardPaginationObject({ ...paginationObject, ...items }));
         dispatch(setPaginateHappen(!paginateHappen));
