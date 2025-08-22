@@ -13,6 +13,7 @@ body {
 body.authentication {
   background-color: #64B5F6;
   background-image: url("../assets/img/back.jpg");
+  background-size: cover;
   font-family: Helvetica;
   overflow-x: hidden;
   height: 100%;
@@ -110,6 +111,9 @@ body.dashboard{
 }
 .custom-select{
   box-shadow: none;
+}
+.color-000 {
+  color:#000
 }
 /* GLOBAL CSS ENDS  */
 

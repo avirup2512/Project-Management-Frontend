@@ -205,10 +205,10 @@ function Board({ paginate }) {
         });
         if (board.status && board.status == 200) {
           setModalShow(false);
-          getBoard(projectId);
+          getBoard(projectId, 0);
         } else {
           setModalShow(false);
-          getBoard(projectId);
+          // getBoard(projectId);
         }
       }
     }
