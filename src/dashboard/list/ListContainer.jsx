@@ -46,7 +46,11 @@ function ListContainer({ onTrigger }) {
   const [listProperty, setListProperties] = useState({
     boardId,
     listAdded: function () {
-      getList();
+      if (activeTabKey == "activeList") {
+        getList(0);
+      } else if (activeTabKey == "archivedList") {
+        getList(1);
+      }
     },
     lastPosition: null,
     updateCards: (listId, updatedCards) => {
@@ -61,34 +65,17 @@ function ListContainer({ onTrigger }) {
     cards: [],
   });
   useEffect(() => {
-    getList();
-  }, []);
-  useEffect(() => {
-    const listCopy = JSON.parse(JSON.stringify(allList));
-    const activeList = [];
-    const archivedList = [];
-    const backLogList = [];
-    if (listCopy && listCopy.length > 0) {
-      listCopy.forEach((e) => {
-        e.label = e.name;
-        e.value = e.id;
-        if (!e.is_archived) {
-          activeList.push(e);
-        } else {
-          archivedList.push(e);
-        }
-        if (e.is_backloged) {
-          backLogList.push(e);
-        }
-      });
+    console.log(activeTabKey);
+
+    if (activeTabKey == "activeList") {
+      getList(0);
+    } else if (activeTabKey == "archivedList") {
+      getList(1);
     }
-    setActiveList(activeList);
-    setArchivedList(archivedList);
-    setbackLogList(backLogList);
-    setListForMultiSelect(listCopy);
-  }, [allList]);
-  const getList = async () => {
-    const list = await listService.getAllList(boardId);
+  }, [activeTabKey]);
+  useEffect(() => {}, [allList]);
+  const getList = async (isArchive) => {
+    const list = await listService.getAllList(boardId, isArchive);
     if (list.status && list.status == 200) {
       const result = Object.entries(list.data).map(([_, value]) => value);
 
@@ -98,8 +85,10 @@ function ListContainer({ onTrigger }) {
       result.forEach((e, i) => {
         result[i] = modifyListData(e);
       });
+      console.log(result);
+      dispatch(setAllList([]));
       dispatch(setAllList(result));
-      // setListItem(result);
+      setListForMultiSelect(result);
       if (result.length > 0) {
         setLastPosition(result[result.length - 1].position);
         setListProperties((p) => ({
@@ -196,6 +185,8 @@ function ListContainer({ onTrigger }) {
   };
   const filterList = async () => {};
   const modifyListData = (e) => {
+    e.label = e.name;
+    e.value = e.id;
     const item = JSON.parse(JSON.stringify(e));
     if (item.hasOwnProperty("cards")) {
       let cardArray = Object.entries(item?.cards).map((e) => {
@@ -216,6 +207,16 @@ function ListContainer({ onTrigger }) {
 
     return item;
   };
+  const tabSelection = (k) => {
+    // const items = {
+    //   currentOffset: 0,
+    // };
+    // dispatch(setBoardPaginationObject({ ...paginationObject, ...items }));
+    // dispatch(resetSelectedBoard({}));
+    setActiveTabKey(k);
+    // setAllChecked(false);
+    // dispatch(setPaginateHappen(!paginateHappen));
+  };
   return (
     <>
       <div>
@@ -228,7 +229,7 @@ function ListContainer({ onTrigger }) {
             <Tabs
               id="list-container-tab"
               activeKey={activeTabKey}
-              onSelect={(k) => setActiveTabKey(k)}
+              onSelect={(k) => tabSelection(k)}
             >
               {/* <Tab eventKey="backLog" title="Backlog">
                 <DragDropContext onDragEnd={changePosition}>
@@ -290,7 +291,7 @@ function ListContainer({ onTrigger }) {
                         style={getListStyle(snapshot.isDraggingOver)}
                         {...provided.droppableProps}
                       >
-                        {activeList.map((e, i) => (
+                        {allList.map((e, i) => (
                           <Draggable
                             key={i}
                             draggableId={("index" + i).toString()}
@@ -308,6 +309,7 @@ function ListContainer({ onTrigger }) {
                                   item={e}
                                   properties={listProperty}
                                   key={i}
+                                  tab={activeTabKey}
                                 />
                               </div>
                             )}
@@ -339,7 +341,7 @@ function ListContainer({ onTrigger }) {
                         style={getListStyle(snapshot.isDraggingOver)}
                         {...provided.droppableProps}
                       >
-                        {archivedList.map((e, i) => (
+                        {allList.map((e, i) => (
                           <Draggable
                             key={i}
                             draggableId={("index" + i).toString()}
@@ -357,7 +359,7 @@ function ListContainer({ onTrigger }) {
                                   item={e}
                                   properties={listProperty}
                                   key={i}
-                                  tab="archiveList"
+                                  tab={activeTabKey}
                                 />
                               </div>
                             )}

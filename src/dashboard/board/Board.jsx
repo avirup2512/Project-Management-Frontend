@@ -15,6 +15,9 @@ import {
   setArchiveBoard,
   setBoard,
   setBoardList,
+  setTagAttachInBoardInStore,
+  setTagColorInStore,
+  setTagNameInStore,
 } from "./BoardSlice";
 import { setUserList } from "../userProfile/UserSlice";
 import {
@@ -26,6 +29,7 @@ import {
 } from "../DashboardSlice";
 import "./Board.css";
 import { motion } from "framer-motion";
+import BoardTag from "../../shared/BoardTag";
 
 function Board({ paginate }) {
   const hasMounted = useRef(false);
@@ -58,6 +62,10 @@ function Board({ paginate }) {
   const [isPublic, setPublic] = useState(true);
   const [users, setUser] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [tagName, setTagName] = useState("");
+  const [tagColor, setTagColor] = useState("#bca7a7ff");
+  const [tagAttachInBoard, setTagAttachInBoard] = useState(0);
+  const [sameTag, setSameTag] = useState(false);
   const [selectedBoards, setSelectedBoards] = useState({
     name: "",
     id: "",
@@ -66,6 +74,7 @@ function Board({ paginate }) {
   });
   const [boardListLocal, setBoardListLocal] = useState({});
   let selectedUser = [];
+  const tagNameSet = useSelector((e) => e.board.tagNameSet);
   let selectedUserMap = new Map();
   let [multiSearchProperties, setSerachProperties] = useState({
     inputLabel: "Add User",
@@ -242,6 +251,8 @@ function Board({ paginate }) {
   };
   const editBoard = async function () {
     setModalShow(true);
+    setTagName("");
+    setTagColor("#000000");
   };
   const fetchUsers = async (params) => {
     const user = await boardService.searchUser(params, projectId);
@@ -427,6 +438,96 @@ function Board({ paginate }) {
     setAllChecked(false);
     dispatch(setPaginateHappen(!paginateHappen));
   };
+  const editTagName = (e) => {
+    dispatch(setTagNameInStore(e));
+  };
+  const editTagColor = (e) => {
+    dispatch(setTagColorInStore(e));
+  };
+  const editTagAttachinBoard = (e) => {
+    dispatch(setTagAttachInBoardInStore(e));
+  };
+  const saveTag = async (e) => {
+    const editedTag = await boardService.editBoardTag({
+      tagId: e.id,
+      boardId: boardSelector.board.id,
+      name: e.name,
+      color: e.tagColor,
+      attachInBoard: e.attachInboard,
+    });
+    if (editedTag.status && editedTag.status == 200) {
+      const baordCopy = {};
+      for (var key in boardSelector.board) {
+        baordCopy[key] = polyfill.deepCopy(boardSelector.board[key]);
+      }
+      baordCopy.tag[e.id] = {
+        tagId: e.id,
+        tagName: e.name,
+        tagColor: e.tagColor,
+        attachInboard: e.attachInboard,
+      };
+      const allBoardCopy = {};
+      for (var x in boardSelector.boardList) {
+        allBoardCopy[x] = polyfill.deepCopy(boardSelector.boardList[x]);
+      }
+      allBoardCopy[baordCopy.id] = baordCopy;
+      dispatch(setBoard(baordCopy));
+      dispatch(setBoardList(allBoardCopy));
+    }
+  };
+  const addTag = async (e) => {
+    setSameTag(false);
+    e.preventDefault();
+    if (tagNameSet.hasOwnProperty(tagName)) {
+      setSameTag(true);
+      return;
+    }
+    const addedTag = await boardService.addBoardTag({
+      boardId: boardSelector.board.id,
+      name: tagName,
+      color: tagColor,
+      attachInBoard: tagAttachInBoard,
+    });
+    if (addedTag.status && addedTag.status == 200) {
+      const baordCopy = {};
+      for (var key in boardSelector.board) {
+        baordCopy[key] = polyfill.deepCopy(boardSelector.board[key]);
+      }
+      baordCopy.tag[addedTag.data.insertId] = {
+        tagId: addedTag.data.insertId,
+        tagName: tagName,
+        tagColor: tagColor,
+        attachInboard: tagAttachInBoard,
+      };
+      const allBoardCopy = {};
+      for (var x in boardSelector.boardList) {
+        allBoardCopy[x] = polyfill.deepCopy(boardSelector.boardList[x]);
+      }
+      allBoardCopy[baordCopy.id] = baordCopy;
+      dispatch(setBoard(baordCopy));
+      dispatch(setBoardList(allBoardCopy));
+    }
+  };
+  const deleteBoardTag = async (e) => {
+    const deletedTag = await boardService.deleteBoardTag(
+      e,
+      boardSelector.board.id
+    );
+    if (deletedTag.status && deletedTag.status == 200) {
+      const baordCopy = {};
+      for (var key in boardSelector.board) {
+        baordCopy[key] = polyfill.deepCopy(boardSelector.board[key]);
+      }
+      delete baordCopy.tag[e];
+      const allBoardCopy = {};
+      for (var x in boardSelector.boardList) {
+        allBoardCopy[x] = polyfill.deepCopy(boardSelector.boardList[x]);
+      }
+      allBoardCopy[baordCopy.id] = baordCopy;
+      dispatch(setBoard(baordCopy));
+      dispatch(setBoardList(allBoardCopy));
+    }
+  };
   return (
     <>
       <div className="header d-flex align-center justify-content-space-between">
@@ -508,7 +609,7 @@ function Board({ paginate }) {
                 </section>
                 <section className="headerItem">Name</section>
                 <section className="headerItem">Assignee</section>
-                <section className="headerItem">Status</section>
+                <section className="headerItem">Tags</section>
                 <section className="headerItem">Card Stautus</section>
                 <section className="headerItem">Created At</section>
                 <section className="headerItem">Action</section>
@@ -636,6 +737,71 @@ function Board({ paginate }) {
                   />
                 </Form.Group>
               </Form>
+              <section>
+                <h5>Tag</h5>
+                <hr></hr>
+                <section className="addTag">
+                  <Form className="d-flex align-items-center" onSubmit={addTag}>
+                    <Form.Group
+                      controlId="formSearch"
+                      className="me-2 width100"
+                    >
+                      <Form.Control
+                        type="text"
+                        value={tagName}
+                        onChange={(e) => {
+                          setSameTag(false);
+                          setTagName(e.target.value);
+                        }}
+                        placeholder="Enter Tag name"
+                        isInvalid={sameTag == true}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Tag already exists.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group controlId="formSearch" className="me-2">
+                      <Form.Control
+                        type="color"
+                        value={tagColor}
+                        onChange={(e) => {
+                          setTagColor(e.target.value);
+                        }}
+                        placeholder="Tag"
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="formSearch" className="me-2">
+                      <Form.Check
+                        onChange={(e) =>
+                          setTagAttachInBoard(e.target.checked ? 1 : 0)
+                        }
+                        type="checkbox"
+                        label="Attach in Board"
+                      />
+                    </Form.Group>
+                    <Button
+                      className="btn-primary mt-2 btn-sm"
+                      type="submit"
+                      variant="primary"
+                    >
+                      Add
+                    </Button>
+                  </Form>
+                </section>
+                <hr></hr>
+                {Object.entries(boardSelector.board.tag).map((e) => {
+                  return (
+                    <BoardTag
+                      tag={e[1]}
+                      editTagName={editTagName}
+                      editTagColor={editTagColor}
+                      editTagAttachinBoard={editTagAttachinBoard}
+                      saveTag={saveTag}
+                      deleteBoardTag={deleteBoardTag}
+                    ></BoardTag>
+                  );
+                })}
+              </section>
             </Modal.Body>
 
             <Modal.Footer>

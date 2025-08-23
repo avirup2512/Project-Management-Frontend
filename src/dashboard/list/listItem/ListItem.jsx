@@ -7,7 +7,14 @@ import { ReactSortable } from "react-sortablejs";
 import Card from "../../card/Card";
 import Menu from "../../../shared/Menu";
 import { useDispatch, useSelector } from "react-redux";
-import { setAllList, setCurrentCard, setDragging } from "../ListSlice";
+import {
+  setAllList,
+  setArchiveList,
+  setCurrentCard,
+  setCurrentList,
+  setDragging,
+  setMenu,
+} from "../ListSlice";
 import CardModal from "../../card/CardDetails";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -26,6 +33,10 @@ function ListItem({
   const navigate = useNavigate();
   const allList = useSelector((e) => e.list.allList);
   const dragging = useSelector((e) => e.list.dragging);
+  const menu = useSelector((e) => e.list.menu);
+  const activeMenuIds = useSelector((e) => e.list.activeMenuIds);
+  const archiveMenuIds = useSelector((e) => e.list.archiveMenuIds);
+  const currentList = useSelector((e) => e.list.currentList);
   const dispatch = useDispatch();
   const [editMode, setEditMode] = useState(false);
   const [cardEditMode, setCardEditMode] = useState(false);
@@ -40,8 +51,8 @@ function ListItem({
     showModal: false,
     message: "",
     type: "",
-    action: function (t) {
-      onConfirm(t);
+    action: function (t, listId) {
+      onConfirm(t, listId);
     },
     close: function () {
       closeModal();
@@ -54,31 +65,7 @@ function ListItem({
     },
   });
   const [menuProperties, setMenuProperties] = useState({
-    items: [
-      {
-        name: "Add Card",
-        action: () => {
-          addCard();
-        },
-      },
-      {
-        name: "Archive List",
-        action: () => {
-          archiveList();
-        },
-      },
-      {
-        name: "Copy List",
-        action: () => {},
-      },
-      {
-        name: "Automation",
-        action: () => {},
-      },
-    ],
-    closeMenu: () => {
-      setMenuShow(false);
-    },
+    items: menu,
   });
   const listService = new ListService();
   const cardService = new CardService();
@@ -89,19 +76,31 @@ function ListItem({
       setLastPosition(item.cards.length);
       setCards(item?.cards);
     }
+    console.log(item);
   }, [item]);
   useEffect(() => {
-    if (tab == "archiveList") {
-      const items = [
-        {
-          name: "Restore List",
-          action: () => {
-            addCard();
-          },
-        },
-      ];
-      setMenuProperties((prevObj) => ({ ...prevObj, items }));
+    if (tab == "archivedList") {
+      const menuCopy = JSON.parse(JSON.stringify(menu));
+      menuCopy.forEach((e, i) => {
+        if (archiveMenuIds.indexOf(e.id) == -1) {
+          menuCopy[i].show = false;
+        } else {
+          menuCopy[i].show = true;
+        }
+      });
+      dispatch(setMenu(menuCopy));
+    } else if (tab == "activeList") {
+      const menuCopy = JSON.parse(JSON.stringify(menu));
+      menuCopy.forEach((e, i) => {
+        if (activeMenuIds.indexOf(e.id) == -1) {
+          menuCopy[i].show = false;
+        } else {
+          menuCopy[i].show = true;
+        }
+      });
+      dispatch(setMenu(menuCopy));
     }
+    setMenuShow(false);
   }, [tab]);
   const enableEditMode = function () {
     setEditMode(true);
@@ -124,13 +123,34 @@ function ListItem({
   const addCard = function (e) {
     setCardEditMode(true);
   };
-  const archiveList = async function () {
+  const archiveList = async function (listId) {
     setMenuShow(false);
     setConfirmationProp((prevItem) => ({
       ...prevItem,
       showModal: true,
       type: "List/Archive",
+      listId,
       message: "Are you sure want to archive the list?",
+    }));
+  };
+  const restoreList = async function (listId) {
+    setMenuShow(false);
+    setConfirmationProp((prevItem) => ({
+      ...prevItem,
+      showModal: true,
+      type: "List/Restore",
+      listId,
+      message: "Are you sure want to restore the list?",
+    }));
+  };
+  const deleteList = async function (listId) {
+    setMenuShow(false);
+    setConfirmationProp((prevItem) => ({
+      ...prevItem,
+      showModal: true,
+      type: "List/Delete",
+      listId,
+      message: "Are you sure want to delete the list?",
     }));
   };
   const addCardFunc = async function (e) {
@@ -285,29 +305,27 @@ function ListItem({
   const closeModal = () => {
     setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }));
   };
-  const onConfirm = async (t) => {
-    console.log(t);
+  const onConfirm = async (t, listId) => {
     const type = t.split("/");
     if (type[0] == "List") {
-      if (type[1] == "Archive") {
+      if (type[1] == "Archive" || type[1] == "Restore") {
+        const archived = type[1] == "Archive" ? 1 : 0;
         const archiveList = await listService.archiveList({
           boardId,
-          listId: item.id,
-          archived: 1,
+          listId,
+          archived,
         });
         console.log(archiveList);
+        if (archiveList.status && archiveList.status == 200) {
+          dispatch(setArchiveList(listId));
+        }
+      } else if (type[1] == "Delete") {
+        const deletedList = await listService.deleteList({ listId, boardId });
+        if (deletedList.status && deletedList.status == 200) {
+          dispatch(setArchiveList(listId));
+        }
       }
     }
-    // const params = { boardId, listId, cardId: item?.id };
-    // const deletedCard = await cardService.deleteCard(params);
-    // if (deletedCard.status && deletedCard.status == 200)
-    // {
-    //     let list = JSON.parse(JSON.stringify(allList))
-    //     let index = list.findIndex(l => l.id === listId);
-    //     list[index].cards = list[index].cards.filter((e) => { return e.id != item?.id });
-    //     dispatch(setAllList(list))
-    //     setMenuShow(false);
-    // }
   };
   const handleDragStart = (evt) => {
     evt.item.style.opacity = "1";
@@ -319,6 +337,26 @@ function ListItem({
   };
   const handleDragEnd = (evt) => {
     dispatch(setDragging(false));
+  };
+  const menuAction = (type, listId) => {
+    console.log(type);
+    switch (type) {
+      case "addCard":
+        addCard();
+        break;
+      case "archiveList":
+        archiveList(listId);
+        break;
+      case "restoreList":
+        restoreList(listId);
+        break;
+      case "deleteList":
+        deleteList(listId);
+        break;
+      default:
+        break;
+    }
+    setMenuShow(false);
   };
   return (
     <>
@@ -367,11 +405,19 @@ function ListItem({
                 </div>
                 <i
                   onClick={(e) => {
+                    dispatch(setCurrentList(item));
                     setMenuShow(true);
                   }}
                   className="bi bi-three-dots cursor-pointer"
                 ></i>
-                <Menu properties={menuProperties} show={menuShow}></Menu>
+                {menuShow && (
+                  <Menu
+                    properties={menu}
+                    action={menuAction}
+                    listId={item?.id}
+                    show={menuShow}
+                  ></Menu>
+                )}
               </div>
             </div>
             <hr></hr>

@@ -9,6 +9,8 @@ export const BoardSlice = createSlice({
     archivedBoardList: [],
     selectedUser: [],
     selectedBoard: {},
+    tagNameSet: {},
+    tagColorSet: [],
   },
   reducers: {
     setBoardList: (state, action) => {
@@ -32,6 +34,17 @@ export const BoardSlice = createSlice({
       console.log(action.payload);
 
       state.board = action.payload;
+      if (
+        state.board.hasOwnProperty("tag") &&
+        Object.entries(state.board.tag).length > 0
+      ) {
+        Object.entries(state.board.tag).forEach((e) => {
+          state.tagNameSet[e[1].tagName] = {
+            color: e[1].tagColor,
+            attachInBoard: e[1].attachInboard,
+          };
+        });
+      }
     },
     setSelectedBoard: (state, action) => {
       state.selectedBoard[action.payload.id] = action.payload;
@@ -47,6 +60,16 @@ export const BoardSlice = createSlice({
         state.selectedBoard[state.boardList[x].id] = state.boardList[x];
       }
     },
+    setTagNameInStore: (state, action) => {
+      state.board.tag[action.payload.id].tagName = action.payload.tagName;
+    },
+    setTagColorInStore: (state, action) => {
+      state.board.tag[action.payload.id].tagColor = action.payload.tagColor;
+    },
+    setTagAttachInBoardInStore: (state, action) => {
+      state.board.tag[action.payload.id].attachInboard =
+        action.payload.attachInboard;
+    },
   },
 });
 export const {
@@ -58,5 +81,8 @@ export const {
   selectAllBoard,
   setArchiveBoard,
   deleteBoardRedux,
+  setTagNameInStore,
+  setTagColorInStore,
+  setTagAttachInBoardInStore,
 } = BoardSlice.actions;
 export default BoardSlice.reducer;

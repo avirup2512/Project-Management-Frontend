@@ -1,7 +1,9 @@
 import "./Menu.css";
 import { useEffect } from "react";
-function Menu({ properties, show }) {
-  useEffect(() => {}, [show]);
+function Menu({ properties, action, listId, show }) {
+  useEffect(() => {
+    console.log(properties);
+  }, [properties]);
   return (
     <>
       {show && (
@@ -19,18 +21,20 @@ function Menu({ properties, show }) {
               className="bi bi-plus primary d-inline-block crossButton"
             ></i>
           </div>
-          {properties.items.map((e, i) => {
+          {properties.map((e, i) => {
             return (
               <>
-                <div
-                  className="menuItem"
-                  key={i}
-                  onClick={(event) => {
-                    event.stopPropagation(), e.action();
-                  }}
-                >
-                  {e.name}
-                </div>
+                {e.show && (
+                  <div
+                    className="menuItem"
+                    key={i}
+                    onClick={(event) => {
+                      event.stopPropagation(), action(e.type, listId);
+                    }}
+                  >
+                    {e.name}
+                  </div>
+                )}
               </>
             );
           })}

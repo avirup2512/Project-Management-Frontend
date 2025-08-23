@@ -1,0 +1,10 @@
+.tagItem{
+        /* background-color: #b2f075; */
+            border-radius: 20px;
+            padding: 2px 9px;
+            margin: 4px;
+            font-size: 12px;
+            align-items: center;
+            display: inline-flex;
+            width: auto;
+}

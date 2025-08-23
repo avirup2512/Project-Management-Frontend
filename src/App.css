@@ -115,6 +115,9 @@ body.dashboard{
 .color-000 {
   color:#000
 }
+.b1 {
+  border: 1px solid #ccc;
+}
 /* GLOBAL CSS ENDS  */
 
 /* Extra small devices (phones, <576px) */

@@ -11,7 +11,11 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import CardService from "../service/CardService";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllList, setCurrentCard } from "../list/ListSlice";
-import { setAllTag, setCurrentCard as setCurrCard } from "./CardSlice";
+import {
+  setAllBoardTag,
+  setAllTag,
+  setCurrentCard as setCurrCard,
+} from "./CardSlice";
 import FloatingForm from "../../shared/FloatingForm";
 import debounce from "lodash.debounce";
 import BoardService from "../service/BoardService";
@@ -26,8 +30,13 @@ import { stateToHTML } from "draft-js-export-html";
 import DatePicker from "react-datepicker";
 import DateService from "../../helper/Date";
 import { UserContext } from "../UserContext";
+import AddTagForm from "../../shared/AddTagForm";
+import { polyfill } from "../../helper/polyfill";
+
 function CardDetails({ closeCall }) {
   const dateService = new DateService();
+  const boardService = new BoardService();
+
   const { loggedInUser } = useContext(UserContext);
   const { projectId } = useParams();
   const { listId } = useParams();
@@ -41,6 +50,8 @@ function CardDetails({ closeCall }) {
   const [activities, setActivities] = useState([]);
   const [reminderDate, setReminderDate] = useState(null);
   const [dueDate, setDueDate] = useState(null);
+  const allBoardTag = useSelector((e) => e.card.allBoardTag);
+
   useEffect(() => {
     if (!currentCard || Object.keys(currentCard).length == 0) {
       getCurrentCard();
@@ -66,6 +77,14 @@ function CardDetails({ closeCall }) {
   useEffect(() => {
     setSerachedTag(allTag);
   }, [allTag]);
+  useEffect(() => {}, []);
+  const getAllBoardTag = async () => {
+    const allTag = await boardService.getAllTag(boardId);
+    console.log(allTag);
+    if (allTag.status && allTag.status == 200) {
+      dispatch(setAllBoardTag(allTag.data));
+    }
+  };
   const dispatch = useDispatch();
   const cardService = new CardService();
   const [cardNameEdit, setCardNamEdit] = useState(false);
@@ -74,22 +93,23 @@ function CardDetails({ closeCall }) {
   const [searchedTag, setSerachedTag] = useState([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showTagModal, setShowTagModal] = useState(false);
   const [inputLabel, setInputLabel] = useState("");
   const [progress, setProgress] = useState(0);
   const [confirmationModalProp, setConfirmationProp] = useState({
     showModal: false,
     message: "",
     type: "",
-    action: function (t) {
-      onConfirm(t);
+    action: function (t, id, card) {
+      onConfirm(t, card);
     },
     close: function () {
       closeModal();
     },
   });
   const [checkList, setCheckList] = useState([]);
-  const boardService = new BoardService();
   const currentTagIdRef = useRef(null);
+  const currentCardRef = useRef(null);
   const currentCheckListId = useRef(null);
   const getCardActivity = async () => {
     const activities = await cardService.getCardActivity({
@@ -112,6 +132,7 @@ function CardDetails({ closeCall }) {
     if (card.status && card.status == 200) {
       // dispatch(setCurrentCard(card.data[Object.keys(card.data)[0]]));
       dispatch(setCurrCard(card.data[Object.keys(card.data)[0]]));
+      getAllBoardTag();
       if (card.data[Object.keys(card.data)[0]].reminder_date)
         setReminderDate(
           new Date(
@@ -276,17 +297,22 @@ function CardDetails({ closeCall }) {
       setShowModal(false);
     }
   };
-  const onConfirm = async (type) => {
+  const onConfirm = async (type, c) => {
+    console.log(currentTagIdRef.current);
+
     if (type == "tag") {
       const card = await cardService.deleteTag({
         cardId,
         boardId,
-        tagId: currentTagIdRef.current,
+        tagId: currentTagIdRef.current.tagId,
       });
       if (card.status && card.status == 200) {
-        let card = JSON.parse(JSON.stringify(currentCard));
-        card.tags = card.tags.filter((e) => e.tagId != currentTagIdRef.current);
-        dispatch(setCurrCard(card));
+        let cardCopy = {};
+        for (var x in c) {
+          cardCopy[x] = polyfill.deepCopy(c[x]);
+        }
+        delete cardCopy.tags[currentTagIdRef.current.boardTagId];
+        dispatch(setCurrCard(cardCopy));
       }
     } else if (type == "checkList") {
       const params = { cardId, boardId, id: currentCheckListId.current };
@@ -301,8 +327,8 @@ function CardDetails({ closeCall }) {
   const closeModal = () => {
     setConfirmationProp((prevItem) => ({ ...prevItem, showModal: false }));
   };
-  const deleteTag = (id) => {
-    currentTagIdRef.current = id;
+  const deleteTag = (tag) => {
+    currentTagIdRef.current = tag;
     setConfirmationProp((prevItem) => ({
       ...prevItem,
       showModal: true,
@@ -311,12 +337,36 @@ function CardDetails({ closeCall }) {
     }));
   };
   const addTag = async (tag) => {
-    let params = { tag, boardId, cardId };
+    let params = {
+      name: tag.name,
+      color: tag.color,
+      boardId,
+      cardId,
+      boardTagId: tag.boardTagId,
+    };
     const addedTag = await cardService.addTag(params);
     if (addedTag.status && addedTag.status == 200) {
-      let currTag = JSON.parse(JSON.stringify(currentCard));
-      currTag.tags.push({ tagId: addedTag.data.insertId, tagName: tag });
-      dispatch(setCurrCard(currTag));
+      let currCard = {};
+      for (var x in currentCard) {
+        currCard[x] = polyfill.deepCopy(currentCard[x]);
+      }
+      let key = tag.boardTagId ? tag.boardTagId : addedTag.data.boardTagId;
+      currCard.tags[key] = {
+        tagId: addedTag.data.insertId,
+        tagName: tag.name,
+        tagColor: tag.color,
+      };
+      const allBoardTagCopy = [];
+      for (var k in allBoardTag) {
+        allBoardTagCopy[k] = polyfill.deepCopy(allBoardTag[k]);
+      }
+      allBoardTagCopy.push({
+        id: addedTag.data.insertId,
+        name: tag.name,
+        color: tag.color,
+      });
+      dispatch(setCurrCard(currCard));
+      // dispatch(setAllBoardTag(allBoardTagCopy));
       setShowModal(false);
     }
   };
@@ -396,6 +446,14 @@ function CardDetails({ closeCall }) {
     if (editedCard.status && editedCard.status == 200) {
       setDueDate(date);
     }
+  };
+  const getListStyle = (color) => {
+    const lightColor = polyfill.isColorLight(color || "");
+    const fontColor = lightColor ? "#000000" : "#ffffff";
+    return {
+      background: color,
+      color: fontColor,
+    };
   };
   return (
     <>
@@ -494,7 +552,7 @@ function CardDetails({ closeCall }) {
                       <Button
                         onClick={() => {
                           setInputLabel("Tags");
-                          setShowModal(true);
+                          setShowTagModal(true);
                         }}
                         size="sm"
                       >
@@ -502,17 +560,22 @@ function CardDetails({ closeCall }) {
                       </Button>
                     </div>
                     <hr className="mt-2"></hr>
-                    {currentCard?.tags?.map((e, i) => (
-                      <span key={i} className="tagItem">
-                        {e.tagName}
-                        <i
-                          onClick={() => {
-                            deleteTag(e.tagId);
-                          }}
-                          className="ms-4 cursor-pointer bi bi-x-circle"
-                        ></i>
-                      </span>
-                    ))}
+                    {currentCard.hasOwnProperty("tags") &&
+                      Object.entries(currentCard?.tags).map((e, i) => (
+                        <span
+                          key={i}
+                          className="tagItem"
+                          style={getListStyle(e[1].tagColor || e[1].color)}
+                        >
+                          {e[1].tagName}
+                          <i
+                            onClick={() => {
+                              deleteTag(e[1]);
+                            }}
+                            className="ms-4 cursor-pointer bi bi-x-circle"
+                          ></i>
+                        </span>
+                      ))}
                     {currentCard?.tags && currentCard?.tags.length == 0 && (
                       <p className="text-center">No Tags.</p>
                     )}
@@ -685,9 +748,21 @@ function CardDetails({ closeCall }) {
           addTag={addTag}
         />
       )}
+      {showTagModal && (
+        <AddTagForm
+          showModal={showTagModal}
+          close={() => {
+            setShowTagModal(false);
+          }}
+          allTag={allBoardTag}
+          addTag={addTag}
+          deleteTag={deleteTag}
+        />
+      )}
       <ConfirmationModal
         onConfirm={onConfirm}
         properties={confirmationModalProp}
+        currentCard={currentCard}
       />
     </>
   );
